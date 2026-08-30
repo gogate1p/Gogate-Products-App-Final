@@ -1,0 +1,176 @@
+import { PrismaService } from '../prisma/prisma.service.js';
+import { EventsService } from '../events/events.service.js';
+import { ScanResolverService } from './scan-resolver.service.js';
+export type ScanType = 'PACKAGE_SCAN' | 'AWB_SCAN' | 'QR_SCAN' | 'BAG_SCAN' | 'MANIFEST_SCAN' | 'HUB_CHECKIN_SCAN' | 'RIDER_ASSIGNMENT_SCAN' | 'PICKUP_SCAN' | 'DELIVERY_SCAN' | 'RETURN_SCAN' | 'REPLACEMENT_SCAN';
+export type PackageScanRequest = {
+    tenantId: string;
+    actorUserId?: string;
+    actorRole?: string;
+    hubId?: string;
+    shipmentId?: string;
+    packageId?: string;
+    bagId?: string;
+    manifestId?: string;
+    runsheetId?: string;
+    riderId?: string;
+    scanType: ScanType;
+    scanValue: string;
+    deviceId?: string;
+    gpsLat?: number;
+    gpsLng?: number;
+    gpsAccuracy?: number;
+    clientTimestamp?: Date;
+    idempotencyKey?: string;
+    metadata?: Record<string, any>;
+};
+export type PackageScanResult = {
+    status: 'NEW' | 'ALREADY_PROCESSED';
+    scan?: any;
+    package?: any;
+    shipment?: any;
+    message?: string;
+};
+export declare class PackageScanningService {
+    private readonly prisma;
+    private readonly eventsService;
+    private readonly scanResolver;
+    private readonly logger;
+    constructor(prisma: PrismaService, eventsService: EventsService, scanResolver: ScanResolverService);
+    resolveScanValue(value: string): Promise<{
+        kind: string;
+        shipmentId: string;
+        packageId?: undefined;
+        bagId?: undefined;
+        manifestId?: undefined;
+    } | {
+        kind: string;
+        packageId: string;
+        shipmentId: string;
+        bagId?: undefined;
+        manifestId?: undefined;
+    } | {
+        kind: string;
+        bagId: string;
+        shipmentId?: undefined;
+        packageId?: undefined;
+        manifestId?: undefined;
+    } | {
+        kind: string;
+        manifestId: string;
+        shipmentId?: undefined;
+        packageId?: undefined;
+        bagId?: undefined;
+    }>;
+    scanPackage(request: PackageScanRequest): Promise<PackageScanResult>;
+    scanBatch(requests: PackageScanRequest[]): Promise<{
+        results: {
+            index: number;
+            result: PackageScanResult;
+            error?: string;
+        }[];
+    }>;
+    getPackageById(id: string, tenantId: string): Promise<{
+        shipment: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: string;
+            awb: string;
+            tenantId: string;
+            orderId: string;
+            serviceType: string;
+            obdRequired: boolean;
+            originHubId: string | null;
+            destinationHubId: string | null;
+            currentHubId: string | null;
+            originalShipmentId: string | null;
+        };
+        scans: {
+            id: string;
+            createdAt: Date;
+            status: string;
+            deviceId: string | null;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            shipmentId: string;
+            userId: string | null;
+            tenantId: string;
+            riderId: string | null;
+            hubId: string | null;
+            packageId: string | null;
+            bagId: string | null;
+            manifestId: string | null;
+            runsheetId: string | null;
+            scanType: string;
+            scanValue: string | null;
+            idempotencyKey: string | null;
+            actorRole: string | null;
+            gpsLat: number | null;
+            gpsLng: number | null;
+            gpsAccuracy: number | null;
+            clientTimestamp: Date | null;
+            serverTimestamp: Date;
+            reason: string | null;
+            createdByUserId: string | null;
+        }[];
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.PackageStatus;
+        shipmentId: string;
+        tenantId: string;
+        packageNumber: number;
+        barcode: string;
+        qrCode: string | null;
+        referenceCode: string | null;
+        weight: number | null;
+        dimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        itemCount: number | null;
+        declaredValue: number | null;
+        images: string[];
+    }>;
+    getPackageHistory(id: string, tenantId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        status: string;
+        deviceId: string | null;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        shipmentId: string;
+        userId: string | null;
+        tenantId: string;
+        riderId: string | null;
+        hubId: string | null;
+        packageId: string | null;
+        bagId: string | null;
+        manifestId: string | null;
+        runsheetId: string | null;
+        scanType: string;
+        scanValue: string | null;
+        idempotencyKey: string | null;
+        actorRole: string | null;
+        gpsLat: number | null;
+        gpsLng: number | null;
+        gpsAccuracy: number | null;
+        clientTimestamp: Date | null;
+        serverTimestamp: Date;
+        reason: string | null;
+        createdByUserId: string | null;
+    }[]>;
+    getShipmentPackages(shipmentId: string, tenantId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.PackageStatus;
+        shipmentId: string;
+        tenantId: string;
+        packageNumber: number;
+        barcode: string;
+        qrCode: string | null;
+        referenceCode: string | null;
+        weight: number | null;
+        dimensions: import("@prisma/client/runtime/library").JsonValue | null;
+        itemCount: number | null;
+        declaredValue: number | null;
+        images: string[];
+    }[]>;
+}
