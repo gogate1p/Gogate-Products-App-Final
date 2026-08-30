@@ -1,82 +1,29 @@
 ```
 # Dependencies
 node_modules/
+backend/node_modules/
 
-# Build artifacts
-dist/
-build/
-*.js.map
-*.mjs.map
-*.tsbuildinfo
+# Prisma
+backend/node_modules/.prisma/
 
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
 
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
 # Logs
 *.log
 
-# Coverage reports
-coverage/
-htmlcov/
-
-# Python cache (if any Python files were detected)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# System files
-.DS_Store
-Thumbs.db
-
 # Temporary files
 *.tmp
-*~
+*.swp
 
-# Compressed archives
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# IDE
+.vscode/
+.idea/
 
-# Lock files
-package-lock.json
-yarn.lock
-
-# TypeScript specific
-*.tsbuildinfo
-
-# Vite specific
-.vite/
-
-# Vitest specific
-.vitest/
-
+# Build artifacts
+dist/
+build/
+target/
 ```
