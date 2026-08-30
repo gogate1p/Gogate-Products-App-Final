@@ -17,7 +17,25 @@ export type RiderState =
 
 export type KycStatus = 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'DOCUMENTS_PENDING' | 'VERIFIED' | 'REJECTED' | 'EXPIRED';
 export type ActivationStatus = 'PENDING' | 'VERIFIED' | 'USED' | 'EXPIRED' | 'REVOKED';
-export type CheckInResult = 'CHECKED_IN' | 'ALREADY_CHECKED_IN' | 'WRONG_HUB' | 'INVALID_SLOT' | 'CHECKIN_LOCATION_UNCERTAIN';
+export type CheckInResult = 'CHECKED_IN' | 'ALREADY_CHECKED_IN' | 'WRONG_HUB' | 'INVALID_SLOT' | 'CHECKIN_LOCATION_UNCERTAIN' | 'OUTSIDE_GEOFENCE';
+
+// Valid KYC state transitions
+const VALID_KYC_TRANSITIONS: Record<KycStatus, KycStatus[]> = {
+  'DRAFT': ['SUBMITTED', 'DOCUMENTS_PENDING'],
+  'SUBMITTED': ['UNDER_REVIEW', 'DOCUMENTS_PENDING'],
+  'UNDER_REVIEW': ['DOCUMENTS_PENDING', 'VERIFIED', 'REJECTED'],
+  'DOCUMENTS_PENDING': ['SUBMITTED', 'UNDER_REVIEW'],
+  'VERIFIED': ['EXPIRED'],
+  'REJECTED': ['SUBMITTED'],
+  'EXPIRED': ['SUBMITTED'],
+};
+
+// Default geofence radius in meters
+const DEFAULT_GEOFENCE_RADIUS_METERS = 100;
+// Minimum GPS accuracy threshold in meters
+const MIN_GPS_ACCURACY_METERS = 50;
+// Poor GPS accuracy threshold
+const POOR_GPS_ACCURACY_METERS = 100;
 
 @Injectable()
 export class RiderWorkforceService {
@@ -35,6 +53,32 @@ export class RiderWorkforceService {
     if (!userRole || !allowed.includes(userRole)) {
       throw new ForbiddenException('FORBIDDEN');
     }
+  }
+
+  /**
+   * Calculate distance between two GPS coordinates using Haversine formula.
+   * Returns distance in meters.
+   */
+  private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371000; // Earth's radius in meters
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  /**
+   * Validate KYC state transition is allowed.
+   */
+  private validateKycTransition(currentStatus: KycStatus, newStatus: KycStatus): boolean {
+    const allowedTransitions = VALID_KYC_TRANSITIONS[currentStatus];
+    return allowedTransitions ? allowedTransitions.includes(newStatus) : false;
   }
 
   async signupRider(input: {
@@ -653,13 +697,48 @@ export class RiderWorkforceService {
     userRole: string | undefined,
     riderId: string,
     documentId: string,
+    verifierId?: string,
     notes?: string,
   ) {
     await this.assertTenantRole(userRole, ['ADMIN', 'HUB_MANAGER', 'HUB_STAFF']);
-    return this.prisma.kycDocument.update({
-      where: { id: documentId, tenantId },
-      data: { status: 'VERIFIED', verifiedAt: new Date(), rejectionReason: notes ?? null },
+    
+    const kyc = await this.prisma.riderKyc.findFirst({
+      where: { tenantId, riderProfileId: riderId },
     });
+    if (!kyc) throw new NotFoundException('KYC_NOT_FOUND');
+    
+    // Validate current KYC state allows document verification
+    if (kyc.status === 'VERIFIED' || kyc.status === 'REJECTED') {
+      throw new BadRequestException('KYC_ALREADY_FINALIZED');
+    }
+
+    const document = await this.prisma.kycDocument.findFirst({
+      where: { id: documentId, tenantId, riderKycId: kyc.id },
+    });
+    if (!document) throw new NotFoundException('DOCUMENT_NOT_FOUND');
+
+    // Create explicit verification record
+    const verification = await this.prisma.documentVerification.create({
+      data: {
+        tenantId,
+        riderKycId: kyc.id,
+        documentId,
+        documentType: document.documentType,
+        hubId: hubId ?? null,
+        verifierId: verifierId ?? null,
+        result: 'VERIFIED',
+        notes: notes ?? null,
+        verifiedAt: new Date(),
+      },
+    });
+
+    // Update document status
+    await this.prisma.kycDocument.update({
+      where: { id: documentId, tenantId },
+      data: { status: 'VERIFIED', verifiedAt: new Date(), rejectionReason: null },
+    });
+
+    return verification;
   }
 
   async rejectKycDocument(
@@ -668,28 +747,97 @@ export class RiderWorkforceService {
     userRole: string | undefined,
     riderId: string,
     documentId: string,
+    verifierId?: string,
     notes?: string,
   ) {
     await this.assertTenantRole(userRole, ['ADMIN', 'HUB_MANAGER', 'HUB_STAFF']);
-    return this.prisma.kycDocument.update({
+    
+    const kyc = await this.prisma.riderKyc.findFirst({
+      where: { tenantId, riderProfileId: riderId },
+    });
+    if (!kyc) throw new NotFoundException('KYC_NOT_FOUND');
+
+    const document = await this.prisma.kycDocument.findFirst({
+      where: { id: documentId, tenantId, riderKycId: kyc.id },
+    });
+    if (!document) throw new NotFoundException('DOCUMENT_NOT_FOUND');
+
+    // Create explicit verification record with rejection
+    const verification = await this.prisma.documentVerification.create({
+      data: {
+        tenantId,
+        riderKycId: kyc.id,
+        documentId,
+        documentType: document.documentType,
+        hubId: hubId ?? null,
+        verifierId: verifierId ?? null,
+        result: 'REJECTED',
+        notes: notes ?? null,
+        verifiedAt: new Date(),
+      },
+    });
+
+    // Update document status
+    await this.prisma.kycDocument.update({
       where: { id: documentId, tenantId },
       data: { status: 'REJECTED', rejectedAt: new Date(), rejectionReason: notes ?? null },
     });
+
+    return verification;
   }
 
-  async approveKyc(tenantId: string, hubId: string | undefined, userRole: string | undefined, riderId: string, notes?: string) {
+  async approveKyc(tenantId: string, hubId: string | undefined, userRole: string | undefined, riderId: string, reviewerId?: string, notes?: string) {
     await this.assertTenantRole(userRole, ['ADMIN', 'HUB_MANAGER', 'HUB_STAFF']);
+    
+    const kyc = await this.prisma.riderKyc.findFirst({
+      where: { tenantId, riderProfileId: riderId },
+      include: { documents: true },
+    });
+    if (!kyc) throw new NotFoundException('KYC_NOT_FOUND');
+    
+    // Validate state transition
+    if (!this.validateKycTransition(kyc.status as KycStatus, 'VERIFIED')) {
+      throw new BadRequestException(`INVALID_KYC_TRANSITION: ${kyc.status} -> VERIFIED`);
+    }
+    
+    // Check all required documents are verified
+    const unverifiedDocs = kyc.documents.filter(d => d.status !== 'VERIFIED');
+    if (unverifiedDocs.length > 0) {
+      throw new BadRequestException('PENDING_DOCUMENT_VERIFICATION');
+    }
+
     return this.prisma.riderKyc.update({
       where: { tenantId_riderProfileId: { tenantId, riderProfileId: riderId } },
-      data: { status: 'VERIFIED', verifiedAt: new Date() },
+      data: { 
+        status: 'VERIFIED', 
+        verifiedAt: new Date(),
+        reviewerId: reviewerId ?? null,
+        reviewNotes: notes ?? null,
+      },
     });
   }
 
-  async rejectKyc(tenantId: string, hubId: string | undefined, userRole: string | undefined, riderId: string, notes?: string) {
+  async rejectKyc(tenantId: string, hubId: string | undefined, userRole: string | undefined, riderId: string, reviewerId?: string, notes?: string) {
     await this.assertTenantRole(userRole, ['ADMIN', 'HUB_MANAGER', 'HUB_STAFF']);
+    
+    const kyc = await this.prisma.riderKyc.findFirst({
+      where: { tenantId, riderProfileId: riderId },
+    });
+    if (!kyc) throw new NotFoundException('KYC_NOT_FOUND');
+    
+    // Validate state transition
+    if (!this.validateKycTransition(kyc.status as KycStatus, 'REJECTED')) {
+      throw new BadRequestException(`INVALID_KYC_TRANSITION: ${kyc.status} -> REJECTED`);
+    }
+
     return this.prisma.riderKyc.update({
       where: { tenantId_riderProfileId: { tenantId, riderProfileId: riderId } },
-      data: { status: 'REJECTED', rejectedAt: new Date(), rejectionReason: notes ?? null },
+      data: { 
+        status: 'REJECTED', 
+        rejectedAt: new Date(), 
+        rejectionReason: notes ?? null,
+        reviewerId: reviewerId ?? null,
+      },
     });
   }
 
