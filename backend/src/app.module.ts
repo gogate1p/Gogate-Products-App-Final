@@ -1,3 +1,15 @@
+import { HubRoutingModule } from './hub-routing/hub-routing.module.js';
+import { PublicTrackingModule } from './public-tracking/public-tracking.module.js';
+import { CustomerTrackingModule } from './customer-tracking/customer-tracking.module.js';
+import { ShipmentWorkflowModule } from './shipment-workflow/shipment-workflow.module.js';
+import { CustomerShipmentDetailModule } from './customer-shipment-detail/customer-shipment-detail.module.js';
+import { TrackingModule } from './tracking/tracking.module.js';
+import { CustomerPortalModule } from './customer-portal/customer-portal.module.js';
+import { PublicSignupModule } from './public-signup/public-signup.module.js';
+import { AssignmentModule } from './assignments/assignment.module.js';
+import { PortalAuthModule } from './portal-auth/portal-auth.module.js';
+import { BranchOpsModule } from './branch-ops/branch-ops.module.js';
+import { PidgeModule } from './integrations/pidge/pidge.module.js';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -12,9 +24,11 @@ import { RunsheetsModule } from './runsheets/runsheets.module.js';
 import { EventsModule } from './events/events.module.js';
 import { PackagesModule } from './packages/packages.module.js';
 import { WorkforceModule } from './workforce/workforce.module.js';
+import { HubOpsModule } from './hub-ops/hub-ops.module.js';
+import { TruckDriverModule } from './truck-driver/truck-driver.module.js';
 
 @Module({
-  imports: [PrismaModule, AuthModule, TenantsModule, UsersModule, HubsModule, OrdersModule, ShipmentsModule, RunsheetsModule, EventsModule, PackagesModule, WorkforceModule],
+  imports: [PidgeModule, PrismaModule, AuthModule, TenantsModule, UsersModule, HubsModule, OrdersModule, ShipmentsModule, RunsheetsModule, EventsModule, PackagesModule, WorkforceModule, TruckDriverModule, HubOpsModule, BranchOpsModule, PortalAuthModule, AssignmentModule, PublicSignupModule, CustomerPortalModule, TrackingModule, CustomerShipmentDetailModule, ShipmentWorkflowModule, CustomerTrackingModule, PublicTrackingModule, HubRoutingModule],
   controllers: [AppController],
   providers: [AppService],
 })

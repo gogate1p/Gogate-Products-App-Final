@@ -1,0 +1,217 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-50: #f0f7ff;
+  --brand-100: #e0effe;
+  --brand-500: #0284c7;
+  --brand-600: #0369a1;
+  --brand-700: #075985;
+
+  --accent-500: #10b981;
+  --accent-600: #059669;
+
+  --surface-50: #f8fafc;
+  --surface-100: #f1f5f9;
+  --surface-200: #e2e8f0;
+
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --orange: #f97316;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(2, 132, 199, .07),
+      transparent 32rem
+    ),
+    radial-gradient(
+      circle at 100% 10%,
+      rgba(16, 185, 129, .055),
+      transparent 30rem
+    ),
+    #f8fafc;
+
+  color: #0f172a;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(2,132,199,.18);
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.gogate-card {
+  background: rgba(255,255,255,.96);
+
+  border: 1px solid #e2e8f0;
+
+  border-radius: 1.5rem;
+
+  box-shadow:
+    0 10px 30px -5px rgba(14,165,233,.08),
+    0 3px 12px rgba(15,23,42,.025);
+}
+
+.gogate-glass {
+  background: rgba(255,255,255,.88);
+
+  border: 1px solid rgba(226,232,240,.9);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 14px 40px rgba(14,165,233,.07);
+}
+
+.gogate-button {
+  background:
+    linear-gradient(
+      135deg,
+      #0284c7,
+      #0369a1
+    );
+
+  color: white;
+
+  box-shadow:
+    0 12px 28px rgba(2,132,199,.22);
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+.gogate-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 17px 38px rgba(2,132,199,.28);
+}
+
+.gogate-secondary {
+  background: #ffffff;
+
+  color: #334155;
+
+  border: 1px solid #e2e8f0;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease;
+}
+
+.gogate-secondary:hover {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.soft-hover {
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    box-shadow .22s ease;
+}
+
+.soft-hover:hover {
+  transform: translateY(-3px);
+
+  border-color: #bae6fd;
+
+  box-shadow:
+    0 18px 45px rgba(2,132,199,.09);
+}
+
+.status-live {
+  position: relative;
+}
+
+.status-live::after {
+  content: "";
+
+  position: absolute;
+
+  inset: -4px;
+
+  border-radius: 999px;
+
+  border:
+    2px solid rgba(16,185,129,.26);
+
+  animation:
+    livePulse 2s ease-out infinite;
+}
+
+@keyframes livePulse {
+  0% {
+    transform: scale(.75);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

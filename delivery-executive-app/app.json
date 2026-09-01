@@ -1,0 +1,47 @@
+{
+    "expo":  {
+                 "name":  "Gogate Products Delivery Executive",
+                 "slug":  "gogate-delivery-executive",
+                 "scheme":  "gogatedelivery",
+                 "version":  "1.0.0",
+                 "orientation":  "portrait",
+                 "userInterfaceStyle":  "light",
+                 "newArchEnabled":  true,
+                 "splash":  {
+                                "backgroundColor":  "#0284c7",
+                                "resizeMode":  "contain"
+                            },
+                 "plugins":  [
+                                 "expo-router",
+                                 "expo-secure-store",
+                                 [
+                                     "expo-location",
+                                     {
+                                         "locationAlwaysAndWhenInUsePermission":  "Allow Gogate Products Delivery Executive to use your location during delivery operations."
+                                     }
+                                 ],
+                                 [
+                                     "expo-camera",
+                                     {
+                                         "cameraPermission":  "Allow Gogate Products Delivery Executive to scan packages and capture delivery proof."
+                                     }
+                                 ],
+                                 "expo-notifications"
+                             ],
+                 "android":  {
+                                 "package":  "com.gogateproducts.deliveryexecutive",
+                                 "permissions":  [
+                                                     "ACCESS_COARSE_LOCATION",
+                                                     "ACCESS_FINE_LOCATION",
+                                                     "CAMERA",
+                                                     "POST_NOTIFICATIONS"
+                                                 ]
+                             },
+                 "ios":  {
+                             "bundleIdentifier":  "com.gogateproducts.deliveryexecutive"
+                         },
+                 "experiments":  {
+                                     "typedRoutes":  true
+                                 }
+             }
+}

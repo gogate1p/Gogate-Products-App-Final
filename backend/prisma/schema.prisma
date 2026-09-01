@@ -8,99 +8,811 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// -----------------------------------------------------------------------------
-// CORE TENANT & USERS
-// -----------------------------------------------------------------------------
 model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  domain    String?
-  config    Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users                  User[]
-  hubs                   Hub[]
-  orders                 Order[]
-  shipments              Shipment[]
-  runsheets              Runsheet[]
-  notifications          Notification[]
-  auditLogs              AuditLog[]
-  packages               Package[]
-  trackingPolicies       TrackingPolicy[]
-  hubNetworkLanes        HubNetworkLane[]
-  hubCapacities          HubCapacity[]
-  packageScans           PackageScan[]
-  bags                   Bag[]
-  manifests              Manifest[]
-  riderProfiles          RiderProfile[] @relation("TenantRiderProfiles")
-  riderKycs              RiderKyc[] @relation("TenantRiderKycs")
-  riderAssignments       RiderHubAssignment[] @relation("TenantRiderAssignments")
-  riderSlots             RiderSlot[] @relation("TenantRiderSlots")
-  hubCheckIns            HubCheckIn[] @relation("TenantHubCheckIns")
-  riderActivations       RiderActivation[] @relation("TenantRiderActivations")
-  activationPins         ActivationPin[] @relation("TenantActivationPins")
-  welcomeKits            WelcomeKit[] @relation("TenantWelcomeKits")
-  kycDocuments           KycDocument[] @relation("TenantKycDocuments")
-  documentVerifications  DocumentVerification[] @relation("TenantDocumentVerifications")
-  vehicles               Vehicle[] @relation("TenantVehicles")
+  id                    String                 @id @default(uuid())
+  name                  String
+  domain                String?
+  config                Json?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  activationPins        ActivationPin[]        @relation("TenantActivationPins")
+  auditLogs             AuditLog[]
+  bags                  Bag[]
+  documentVerifications DocumentVerification[] @relation("TenantDocumentVerifications")
+  hubs                  Hub[]
+  hubCapacities         HubCapacity[]
+  hubCheckIns           HubCheckIn[]           @relation("TenantHubCheckIns")
+  hubNetworkLanes       HubNetworkLane[]
+  kycDocuments          KycDocument[]          @relation("TenantKycDocuments")
+  manifests             Manifest[]
+  notifications         Notification[]
+  orders                Order[]
+  packages              Package[]
+  packageScans          PackageScan[]
+  riderActivations      RiderActivation[]      @relation("TenantRiderActivations")
+  riderAssignments      RiderHubAssignment[]   @relation("TenantRiderAssignments")
+  riderKycs             RiderKyc[]             @relation("TenantRiderKycs")
+  riderProfiles         RiderProfile[]         @relation("TenantRiderProfiles")
+  riderSlots            RiderSlot[]            @relation("TenantRiderSlots")
+  runsheets             Runsheet[]
+  shipments             Shipment[]
+  trackingPolicies      TrackingPolicy[]
+  users                 User[]
+  vehicles              Vehicle[]              @relation("TenantVehicles")
+  welcomeKits           WelcomeKit[]           @relation("TenantWelcomeKits")
 }
 
 model TrackingPolicy {
-  id                 String       @id @default(uuid())
-  tenantId           String
-  tenant             Tenant       @relation(fields: [tenantId], references: [id])
-  serviceType        String       @default("NORMAL")
-  allowDynamicEta    Boolean      @default(false)
-  allowLiveTracking  Boolean      @default(false)
-  allowExactArrival  Boolean      @default(false)
-  deliveryWindow     String?
-  obdRequired        Boolean      @default(false)
-  status             String       @default("ACTIVE")
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  id                String   @id @default(uuid())
+  tenantId          String
+  serviceType       String   @default("NORMAL")
+  allowDynamicEta   Boolean  @default(false)
+  allowLiveTracking Boolean  @default(false)
+  allowExactArrival Boolean  @default(false)
+  deliveryWindow    String?
+  obdRequired       Boolean  @default(false)
+  status            String   @default("ACTIVE")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tenant            Tenant   @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId, serviceType])
 }
 
 model User {
-  id           String   @id @default(uuid())
-  tenantId     String
-  tenant       Tenant   @relation(fields: [tenantId], references: [id])
-  role         Role
-  email        String?  @unique
-  phone        String   @unique
-  passwordHash String
-  status       String   @default("ACTIVE")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  shipmentEvents        ShipmentEvent[]
-  runsheets             Runsheet[]
-  riderProfiles         RiderProfile[] @relation("RiderProfileUser")
-  riderKycRecords       RiderKyc[] @relation("RiderKycUser")
-  riderActivations      RiderActivation[] @relation("RiderActivationUser")
-  deliveryAttempts      DeliveryAttempt[]
-  obdSessions           ObdSession[]
-  auditLogs             AuditLog[]
-  riderScans            PackageScan[] @relation("PackageScanRider")
-  packageScans          PackageScan[] @relation("PackageScanUser")
-  createdScanRecords    PackageScan[] @relation("PackageScanCreatedBy")
-  reviewedKycRecords    RiderKyc[] @relation("RiderKycReviewer")
-  reviewedDocuments     KycDocument[] @relation("KycDocumentReviewer")
-  documentReviews       DocumentVerification[] @relation("VerificationReviewer")
-  approvedAssignments   RiderHubAssignment[] @relation("RiderAssignmentApprover")
-  assignedVehicles      Vehicle[] @relation("AssignedDriver")
-  ownedVehicles         Vehicle[] @relation("VehicleOwner")
+  id                  String                 @id @default(uuid())
+  userCode            String?                @unique
+  tenantId            String
+  role                Role
+  email               String?                @unique
+  phone               String                 @unique
+  passwordHash        String
+  status              String                 @default("ACTIVE")
+  mustChangePassword  Boolean                @default(false)
+  lastLoginAt         DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  auditLogs           AuditLog[]
+  deliveryAttempts    DeliveryAttempt[]
+  documentReviews     DocumentVerification[] @relation("VerificationReviewer")
+  reviewedDocuments   KycDocument[]          @relation("KycDocumentReviewer")
+  obdSessions         ObdSession[]
+  createdScanRecords  PackageScan[]          @relation("PackageScanCreatedBy")
+  riderScans          PackageScan[]          @relation("PackageScanRider")
+  packageScans        PackageScan[]          @relation("PackageScanUser")
+  riderActivations    RiderActivation[]      @relation("RiderActivationUser")
+  approvedAssignments RiderHubAssignment[]   @relation("RiderAssignmentApprover")
+  reviewedKycRecords  RiderKyc[]             @relation("RiderKycReviewer")
+  riderKycRecords     RiderKyc[]             @relation("RiderKycUser")
+  riderProfiles       RiderProfile[]         @relation("RiderProfileUser")
+  runsheets           Runsheet[]
+  shipmentEvents      ShipmentEvent[]
+  tenant              Tenant                 @relation(fields: [tenantId], references: [id])
+  assignedVehicles    Vehicle[]              @relation("AssignedDriver")
+  ownedVehicles       Vehicle[]              @relation("VehicleOwner")
 
   @@index([tenantId, role])
   @@index([tenantId, status])
+}
+
+model Hub {
+  id                    String                 @id @default(uuid())
+  shortCode             String?                @unique
+  hubCode               String?                @unique
+  tenantId              String
+  name                  String
+  type                  HubType
+  locationLat           Float?
+  locationLng           Float?
+  pinCodesServed        String[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  destinationBags       Bag[]                  @relation("BagDestination")
+  originBags            Bag[]                  @relation("BagOrigin")
+  documentVerifications DocumentVerification[] @relation("DocumentVerificationHub")
+  tenant                Tenant                 @relation(fields: [tenantId], references: [id])
+  hubCapacities         HubCapacity[]
+  hubCheckIns           HubCheckIn[]           @relation("HubCheckInHub")
+  outboundLanes         HubNetworkLane[]       @relation("OutboundLane")
+  inboundLanes          HubNetworkLane[]       @relation("InboundLane")
+  destinationManifests  Manifest[]             @relation("ManifestDestination")
+  originManifests       Manifest[]             @relation("ManifestOrigin")
+  packageScans          PackageScan[]
+  activations           RiderActivation[]      @relation("RiderActivationHub")
+  riderAssignments      RiderHubAssignment[]   @relation("RiderHubAssignmentHub")
+  riderSlots            RiderSlot[]            @relation("RiderSlotHub")
+  runsheets             Runsheet[]
+  currentShipments      Shipment[]             @relation("CurrentHub")
+  destinationShipments  Shipment[]             @relation("DestinationHub")
+  originShipments       Shipment[]             @relation("OriginHub")
+
+  @@index([tenantId, type])
+  @@index([tenantId, locationLat, locationLng])
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  tenantId        String
+  merchantId      String
+  customerDetails Json
+  items           Json
+  totalAmount     Float
+  paymentStatus   PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  tenant          Tenant        @relation(fields: [tenantId], references: [id])
+  shipments       Shipment[]
+}
+
+model Shipment {
+  id                 String            @id @default(uuid())
+  bookingBranchId    String?
+  tenantId           String
+  orderId            String
+  awb                String            @unique
+  status             String            @default("PENDING")
+  serviceType        String            @default("NORMAL")
+  obdRequired        Boolean           @default(false)
+  originHubId        String?
+  destinationHubId   String?
+  currentHubId       String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  expectedDeliveryAt DateTime?
+  deliveredAt        DateTime?
+  receivedByName     String?
+  originalShipmentId String?
+  deliveryAttempts   DeliveryAttempt[]
+  deliveryOtps       DeliveryOtp[]
+  obdSessions        ObdSession[]
+  packages           Package[]
+  packageScans       PackageScan[]
+  payments           Payment[]
+  routeStops         RouteStop[]
+  runsheetShipment   RunsheetShipment?
+  currentHub         Hub?              @relation("CurrentHub", fields: [currentHubId], references: [id])
+  destinationHub     Hub?              @relation("DestinationHub", fields: [destinationHubId], references: [id])
+  order              Order             @relation(fields: [orderId], references: [id])
+  originHub          Hub?              @relation("OriginHub", fields: [originHubId], references: [id])
+  originalShipment   Shipment?         @relation("ReplacementLink", fields: [originalShipmentId], references: [id])
+  replacementFor     Shipment[]        @relation("ReplacementLink")
+  tenant             Tenant            @relation(fields: [tenantId], references: [id])
+  events             ShipmentEvent[]
+  slas               Sla[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, currentHubId, status])
+  @@index([tenantId, awb])
+  @@index([tenantId, destinationHubId, status])
+}
+
+model Package {
+  id            String         @id @default(uuid())
+  tenantId      String
+  shipmentId    String
+  packageNumber Int            @default(1)
+  barcode       String
+  qrCode        String?
+  referenceCode String?
+  status        PackageStatus  @default(CREATED)
+  weight        Float?
+  dimensions    Json?
+  itemCount     Int?           @default(1)
+  declaredValue Float?
+  images        String[]       @default([])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bagItems      BagItem[]
+  manifestItems ManifestItem[]
+  shipment      Shipment       @relation(fields: [shipmentId], references: [id])
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  scans         PackageScan[]
+
+  @@unique([tenantId, barcode])
+  @@unique([tenantId, referenceCode])
+  @@index([tenantId, shipmentId])
+  @@index([tenantId, status])
+  @@index([tenantId, barcode])
+  @@index([shipmentId, status])
+}
+
+model PackageScan {
+  id              String    @id @default(uuid())
+  tenantId        String
+  shipmentId      String
+  packageId       String?
+  bagId           String?
+  manifestId      String?
+  hubId           String?
+  runsheetId      String?
+  riderId         String?
+  userId          String?
+  scanType        String
+  scanValue       String?
+  idempotencyKey  String?
+  deviceId        String?
+  actorRole       String?
+  gpsLat          Float?
+  gpsLng          Float?
+  gpsAccuracy     Float?
+  clientTimestamp DateTime?
+  serverTimestamp DateTime  @default(now())
+  status          String    @default("VALID")
+  reason          String?
+  metadata        Json?
+  createdByUserId String?
+  createdAt       DateTime  @default(now())
+  bag             Bag?      @relation(fields: [bagId], references: [id])
+  createdBy       User?     @relation("PackageScanCreatedBy", fields: [createdByUserId], references: [id])
+  hub             Hub?      @relation(fields: [hubId], references: [id])
+  manifest        Manifest? @relation(fields: [manifestId], references: [id])
+  package         Package?  @relation(fields: [packageId], references: [id])
+  rider           User?     @relation("PackageScanRider", fields: [riderId], references: [id])
+  runsheet        Runsheet? @relation(fields: [runsheetId], references: [id])
+  shipment        Shipment  @relation(fields: [shipmentId], references: [id])
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  user            User?     @relation("PackageScanUser", fields: [userId], references: [id])
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, shipmentId, createdAt])
+  @@index([tenantId, packageId, createdAt])
+  @@index([tenantId, scanType, status])
+}
+
+model ShipmentEvent {
+  id          String   @id @default(uuid())
+  shipmentId  String
+  status      String
+  locationLat Float?
+  locationLng Float?
+  userId      String?
+  deviceId    String?
+  metadata    Json?
+  timestamp   DateTime @default(now())
+  shipment    Shipment @relation(fields: [shipmentId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
+model Bag {
+  id               String         @id @default(uuid())
+  tenantId         String
+  barcode          String
+  status           BagStatus      @default(OPEN)
+  sealNumber       String?
+  weight           Float?
+  originHubId      String
+  destinationHubId String
+  createdById      String?
+  closedById       String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  destinationHub   Hub            @relation("BagDestination", fields: [destinationHubId], references: [id])
+  originHub        Hub            @relation("BagOrigin", fields: [originHubId], references: [id])
+  tenant           Tenant         @relation(fields: [tenantId], references: [id])
+  items            BagItem[]
+  manifestItems    ManifestItem[]
+  scans            PackageScan[]
+
+  @@unique([tenantId, barcode])
+  @@index([tenantId, status])
+}
+
+model BagItem {
+  id        String   @id @default(uuid())
+  bagId     String
+  packageId String
+  createdAt DateTime @default(now())
+  bag       Bag      @relation(fields: [bagId], references: [id])
+  package   Package  @relation(fields: [packageId], references: [id])
+
+  @@unique([bagId, packageId])
+}
+
+model Manifest {
+  id               String         @id @default(uuid())
+  tenantId         String
+  manifestNumber   String
+  type             ManifestType
+  status           ManifestStatus @default(DRAFT)
+  originHubId      String?
+  destinationHubId String?
+  vehicleId        String?
+  driverId         String?
+  createdById      String?
+  receivedById     String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  destinationHub   Hub?           @relation("ManifestDestination", fields: [destinationHubId], references: [id])
+  originHub        Hub?           @relation("ManifestOrigin", fields: [originHubId], references: [id])
+  tenant           Tenant         @relation(fields: [tenantId], references: [id])
+  vehicle          Vehicle?       @relation(fields: [vehicleId], references: [id])
+  items            ManifestItem[]
+  scans            PackageScan[]
+
+  @@unique([tenantId, manifestNumber])
+  @@index([tenantId, status])
+}
+
+model ManifestItem {
+  id         String   @id @default(uuid())
+  manifestId String
+  packageId  String?
+  bagId      String?
+  status     String   @default("PENDING")
+  bag        Bag?     @relation(fields: [bagId], references: [id])
+  manifest   Manifest @relation(fields: [manifestId], references: [id])
+  package    Package? @relation(fields: [packageId], references: [id])
+}
+
+model Runsheet {
+  id               String             @id @default(uuid())
+  tenantId         String
+  hubId            String
+  riderId          String?
+  vehicleId        String?
+  status           String             @default("PENDING")
+  date             DateTime
+  slot             String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deliveryAttempts DeliveryAttempt[]
+  scans            PackageScan[]
+  routes           Route?
+  hub              Hub                @relation(fields: [hubId], references: [id])
+  rider            User?              @relation(fields: [riderId], references: [id])
+  tenant           Tenant             @relation(fields: [tenantId], references: [id])
+  vehicle          Vehicle?           @relation(fields: [vehicleId], references: [id])
+  shipments        RunsheetShipment[]
+
+  @@index([tenantId, riderId, status])
+  @@index([tenantId, hubId, status])
+}
+
+model RunsheetShipment {
+  id            String   @id @default(uuid())
+  runsheetId    String
+  shipmentId    String   @unique
+  sequenceOrder Int
+  status        String   @default("PENDING")
+  runsheet      Runsheet @relation(fields: [runsheetId], references: [id])
+  shipment      Shipment @relation(fields: [shipmentId], references: [id])
+}
+
+model Route {
+  id         String      @id @default(uuid())
+  runsheetId String      @unique
+  distance   Float?
+  duration   Int?
+  geometry   String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  runsheet   Runsheet    @relation(fields: [runsheetId], references: [id])
+  stops      RouteStop[]
+}
+
+model RouteStop {
+  id         String    @id @default(uuid())
+  routeId    String
+  shipmentId String
+  type       String
+  sequence   Int
+  lat        Float?
+  lng        Float?
+  eta        DateTime?
+  timeWindow String?
+  route      Route     @relation(fields: [routeId], references: [id])
+  shipment   Shipment  @relation(fields: [shipmentId], references: [id])
+}
+
+model DeliveryAttempt {
+  id            String   @id @default(uuid())
+  shipmentId    String
+  runsheetId    String
+  riderId       String
+  attemptNumber Int
+  status        String
+  reason        String?
+  notes         String?
+  evidenceUrls  Json?
+  lat           Float?
+  lng           Float?
+  timestamp     DateTime @default(now())
+  rider         User     @relation(fields: [riderId], references: [id])
+  runsheet      Runsheet @relation(fields: [runsheetId], references: [id])
+  shipment      Shipment @relation(fields: [shipmentId], references: [id])
+}
+
+model DeliveryOtp {
+  id         String    @id @default(uuid())
+  shipmentId String
+  otpHash    String
+  cipherText String?
+  expiresAt  DateTime
+  usedAt     DateTime?
+  attempts   Int       @default(0)
+  status     String    @default("PENDING")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  shipment   Shipment  @relation(fields: [shipmentId], references: [id])
+}
+
+model ObdSession {
+  id               String    @id @default(uuid())
+  shipmentId       String
+  riderId          String
+  status           ObdStatus @default(PENDING)
+  codeHash         String
+  customerVerified Boolean   @default(false)
+  evidenceUrls     Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  rider            User      @relation(fields: [riderId], references: [id])
+  shipment         Shipment  @relation(fields: [shipmentId], references: [id])
+}
+
+model Payment {
+  id               String        @id @default(uuid())
+  shipmentId       String
+  amount           Float
+  method           PaymentMethod
+  status           PaymentStatus @default(PENDING)
+  gatewayReference String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  shipment         Shipment      @relation(fields: [shipmentId], references: [id])
+}
+
+model RiderProfile {
+  id                String               @id @default(uuid())
+  tenantId          String
+  userId            String
+  riderCode         String               @unique
+  riderState        RiderState           @default(APPLICANT)
+  onboardingStatus  String               @default("PROFILE_CREATED")
+  preferredHubId    String?
+  primaryHubId      String?
+  serviceArea       String?
+  profilePhotoUrl   String?
+  emergencyContact  Json?
+  joiningDate       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  activationPins    ActivationPin[]
+  checkIns          HubCheckIn[]
+  activationRecords RiderActivation[]
+  assignments       RiderHubAssignment[]
+  kycRecords        RiderKyc[]
+  tenant            Tenant               @relation("TenantRiderProfiles", fields: [tenantId], references: [id])
+  user              User                 @relation("RiderProfileUser", fields: [userId], references: [id])
+  slots             RiderSlot[]
+  vehicleRecords    Vehicle[]
+  welcomeKits       WelcomeKit[]
+
+  @@unique([tenantId, userId])
+  @@index([tenantId, riderState])
+  @@index([tenantId, preferredHubId])
+}
+
+model RiderKyc {
+  id              String                 @id @default(uuid())
+  tenantId        String
+  riderProfileId  String
+  userId          String?
+  status          KycStatus              @default(DRAFT)
+  submittedAt     DateTime?
+  verifiedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  reviewerId      String?
+  preferredHubId  String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  verifications   DocumentVerification[]
+  documents       KycDocument[]
+  reviewer        User?                  @relation("RiderKycReviewer", fields: [reviewerId], references: [id])
+  riderProfile    RiderProfile           @relation(fields: [riderProfileId], references: [id])
+  tenant          Tenant                 @relation("TenantRiderKycs", fields: [tenantId], references: [id])
+  user            User?                  @relation("RiderKycUser", fields: [userId], references: [id])
+
+  @@unique([tenantId, riderProfileId])
+  @@index([tenantId, status])
+}
+
+model KycDocument {
+  id                 String         @id @default(uuid())
+  tenantId           String
+  riderKycId         String
+  documentType       String
+  documentRef        String?
+  status             DocumentStatus @default(PENDING)
+  uploadedAt         DateTime?
+  verifiedAt         DateTime?
+  rejectedAt         DateTime?
+  expiryDate         DateTime?
+  reviewerId         String?
+  rejectionReason    String?
+  originalVerifiedAt DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  reviewer           User?          @relation("KycDocumentReviewer", fields: [reviewerId], references: [id])
+  riderKyc           RiderKyc       @relation(fields: [riderKycId], references: [id])
+  tenant             Tenant         @relation("TenantKycDocuments", fields: [tenantId], references: [id])
+
+  @@index([tenantId, riderKycId, status])
+}
+
+model DocumentVerification {
+  id           String    @id @default(uuid())
+  tenantId     String
+  riderKycId   String
+  documentType String
+  hubId        String?
+  verifierId   String?
+  result       String    @default("PENDING")
+  notes        String?
+  verifiedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  hub          Hub?      @relation("DocumentVerificationHub", fields: [hubId], references: [id])
+  riderKyc     RiderKyc  @relation(fields: [riderKycId], references: [id])
+  tenant       Tenant    @relation("TenantDocumentVerifications", fields: [tenantId], references: [id])
+  verifier     User?     @relation("VerificationReviewer", fields: [verifierId], references: [id])
+
+  @@index([tenantId, riderKycId, documentType])
+}
+
+model RiderActivation {
+  id             String           @id @default(uuid())
+  tenantId       String
+  userId         String
+  riderProfileId String?
+  hubId          String
+  status         ActivationStatus @default(PENDING)
+  expiresAt      DateTime
+  attempts       Int              @default(0)
+  lastAttemptAt  DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  activationPins ActivationPin[]
+  hub            Hub              @relation("RiderActivationHub", fields: [hubId], references: [id])
+  riderProfile   RiderProfile?    @relation(fields: [riderProfileId], references: [id])
+  tenant         Tenant           @relation("TenantRiderActivations", fields: [tenantId], references: [id])
+  user           User             @relation("RiderActivationUser", fields: [userId], references: [id])
+}
+
+model ActivationPin {
+  id             String           @id @default(uuid())
+  tenantId       String
+  riderProfileId String
+  activationId   String?
+  hash           String
+  attempts       Int              @default(0)
+  maxAttempts    Int              @default(5)
+  expiresAt      DateTime
+  status         String           @default("ACTIVE")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  activation     RiderActivation? @relation(fields: [activationId], references: [id])
+  riderProfile   RiderProfile     @relation(fields: [riderProfileId], references: [id])
+  tenant         Tenant           @relation("TenantActivationPins", fields: [tenantId], references: [id])
+
+  @@index([tenantId, riderProfileId, status])
+}
+
+model WelcomeKit {
+  id              String           @id @default(uuid())
+  tenantId        String
+  riderProfileId  String
+  orderRef        String?
+  status          WelcomeKitStatus @default(ORDERED)
+  items           Json?
+  dispatchStatus  String?
+  courierProvider String?
+  trackingCode    String?
+  expectedDate    DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  riderProfile    RiderProfile     @relation(fields: [riderProfileId], references: [id])
+  tenant          Tenant           @relation("TenantWelcomeKits", fields: [tenantId], references: [id])
+
+  @@index([tenantId, riderProfileId, status])
+}
+
+model RiderHubAssignment {
+  id               String       @id @default(uuid())
+  tenantId         String
+  riderProfileId   String
+  hubId            String
+  assignmentStatus String       @default("PENDING")
+  isPrimary        Boolean      @default(false)
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
+  approvedById     String?
+  approvedAt       DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  approvedBy       User?        @relation("RiderAssignmentApprover", fields: [approvedById], references: [id])
+  hub              Hub          @relation("RiderHubAssignmentHub", fields: [hubId], references: [id])
+  riderProfile     RiderProfile @relation(fields: [riderProfileId], references: [id])
+  tenant           Tenant       @relation("TenantRiderAssignments", fields: [tenantId], references: [id])
+
+  @@index([tenantId, riderProfileId, isPrimary])
+}
+
+model RiderSlot {
+  id             String       @id @default(uuid())
+  tenantId       String
+  riderProfileId String
+  hubId          String
+  date           DateTime
+  startTime      DateTime
+  endTime        DateTime
+  status         SlotStatus   @default(BOOKED)
+  capacity       Int          @default(1)
+  bookedCount    Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  checkIns       HubCheckIn[]
+  hub            Hub          @relation("RiderSlotHub", fields: [hubId], references: [id])
+  riderProfile   RiderProfile @relation(fields: [riderProfileId], references: [id])
+  tenant         Tenant       @relation("TenantRiderSlots", fields: [tenantId], references: [id])
+
+  @@index([tenantId, hubId, date])
+  @@index([tenantId, hubId, status, startTime, endTime])
+  @@index([tenantId, riderProfileId, status])
+}
+
+model HubCheckIn {
+  id             String       @id @default(uuid())
+  tenantId       String
+  riderProfileId String
+  hubId          String
+  slotId         String?
+  checkedInAt    DateTime     @default(now())
+  lat            Float?
+  lng            Float?
+  gpsAccuracy    Float?
+  deviceId       String?
+  result         String       @default("CHECKED_IN")
+  createdAt      DateTime     @default(now())
+  hub            Hub          @relation("HubCheckInHub", fields: [hubId], references: [id])
+  riderProfile   RiderProfile @relation(fields: [riderProfileId], references: [id])
+  slot           RiderSlot?   @relation(fields: [slotId], references: [id])
+  tenant         Tenant       @relation("TenantHubCheckIns", fields: [tenantId], references: [id])
+
+  @@index([tenantId, riderProfileId, slotId])
+}
+
+model Vehicle {
+  id                 String        @id @default(uuid())
+  tenantId           String
+  riderProfileId     String?
+  ownerId            String?
+  assignedDriverId   String?
+  type               String
+  registration       String        @unique
+  vehicleType        String?
+  make               String?
+  model              String?
+  year               Int?
+  fuelType           String?
+  ownerType          String?       @default("SELF")
+  capacity           Float?
+  status             VehicleStatus @default(PENDING_VERIFICATION)
+  verificationState  String        @default("PENDING")
+  rcReference        String?
+  insuranceReference String?
+  permitReference    String?
+  expiryDate         DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  manifests          Manifest[]
+  runsheets          Runsheet[]
+  assignedDriver     User?         @relation("AssignedDriver", fields: [assignedDriverId], references: [id])
+  owner              User?         @relation("VehicleOwner", fields: [ownerId], references: [id])
+  riderProfile       RiderProfile? @relation(fields: [riderProfileId], references: [id])
+  tenant             Tenant        @relation("TenantVehicles", fields: [tenantId], references: [id])
+
+  @@index([tenantId, riderProfileId, status])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String?
+  type      String
+  channel   String
+  status    String   @default("PENDING")
+  payload   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model HubNetworkLane {
+  id                     String   @id @default(uuid())
+  tenantId               String
+  fromHubId              String
+  toHubId                String
+  distanceKm             Float?
+  expectedTransitMinutes Int?
+  cutoff                 String?
+  capacity               Int?
+  active                 Boolean  @default(true)
+  serviceTypes           String[]
+  priority               Int      @default(0)
+  vehicleRequirements    String[]
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  fromHub                Hub      @relation("OutboundLane", fields: [fromHubId], references: [id])
+  tenant                 Tenant   @relation(fields: [tenantId], references: [id])
+  toHub                  Hub      @relation("InboundLane", fields: [toHubId], references: [id])
+
+  @@index([tenantId, active, priority])
+  @@index([tenantId, fromHubId, toHubId])
+}
+
+model HubCapacity {
+  id          String    @id @default(uuid())
+  tenantId    String
+  hubId       String
+  serviceType String?
+  date        DateTime?
+  timeWindow  String?
+  capacity    Int       @default(0)
+  used        Int       @default(0)
+  status      String    @default("OPEN")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  hub         Hub       @relation(fields: [hubId], references: [id])
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, hubId, serviceType, date])
+}
+
+model Sla {
+  id         String    @id @default(uuid())
+  shipmentId String
+  type       String
+  deadline   DateTime
+  status     SlaStatus @default(SAFE)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  shipment   Shipment  @relation(fields: [shipmentId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String?
+  action    String
+  entity    String
+  entityId  String
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  timestamp DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model OutboxEvent {
+  id        String   @id @default(uuid())
+  type      String
+  payload   Json
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
   SUPER_ADMIN
   ADMIN
   OPERATIONS_MANAGER
+  REGIONAL_MANAGER
+  BRANCH_MANAGER
+  BRANCH_STAFF
+  BOOKING_AGENT
   DISPATCHER
   HUB_MANAGER
   HUB_PERSONNEL
@@ -110,44 +822,8 @@ enum Role {
   RIDER
   DRIVER
   MERCHANT
+  SHIPPER
   CUSTOMER
-}
-
-// -----------------------------------------------------------------------------
-// HUB NETWORK
-// -----------------------------------------------------------------------------
-model Hub {
-  id             String   @id @default(uuid())
-  tenantId       String
-  tenant         Tenant   @relation(fields: [tenantId], references: [id])
-  name           String
-  type           HubType
-  locationLat    Float?
-  locationLng    Float?
-  pinCodesServed String[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  originShipments       Shipment[] @relation("OriginHub")
-  destinationShipments  Shipment[] @relation("DestinationHub")
-  currentShipments      Shipment[] @relation("CurrentHub")
-  runsheets             Runsheet[]
-  originBags            Bag[]      @relation("BagOrigin")
-  destinationBags       Bag[]      @relation("BagDestination")
-  originManifests       Manifest[] @relation("ManifestOrigin")
-  destinationManifests  Manifest[] @relation("ManifestDestination")
-  riderAssignments      RiderHubAssignment[] @relation("RiderHubAssignmentHub")
-  riderSlots            RiderSlot[] @relation("RiderSlotHub")
-  hubCheckIns           HubCheckIn[] @relation("HubCheckInHub")
-  activations           RiderActivation[] @relation("RiderActivationHub")
-  outboundLanes         HubNetworkLane[] @relation("OutboundLane")
-  inboundLanes          HubNetworkLane[] @relation("InboundLane")
-  hubCapacities         HubCapacity[]
-  packageScans          PackageScan[]
-  documentVerifications DocumentVerification[] @relation("DocumentVerificationHub")
-
-  @@index([tenantId, type])
-  @@index([tenantId, locationLat, locationLng])
 }
 
 enum HubType {
@@ -160,139 +836,6 @@ enum HubType {
   RETURN_HUB
   WAREHOUSE
   CROSS_DOCK
-}
-
-// -----------------------------------------------------------------------------
-// ORDER & SHIPMENT
-// -----------------------------------------------------------------------------
-model Order {
-  id              String   @id @default(uuid())
-  tenantId        String
-  tenant          Tenant   @relation(fields: [tenantId], references: [id])
-  merchantId      String
-  customerDetails Json
-  items           Json
-  totalAmount     Float
-  paymentStatus   PaymentStatus @default(PENDING)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  shipments Shipment[]
-}
-
-model Shipment {
-  id               String   @id @default(uuid())
-  tenantId         String
-  tenant           Tenant   @relation(fields: [tenantId], references: [id])
-  orderId          String
-  order            Order    @relation(fields: [orderId], references: [id])
-  awb              String   @unique
-  status           String   @default("PENDING")
-  serviceType      String   @default("NORMAL") // NORMAL, HYPERLOCAL, PRIORITY
-  obdRequired      Boolean  @default(false)
-  originHubId      String?
-  originHub        Hub?     @relation("OriginHub", fields: [originHubId], references: [id])
-  destinationHubId String?
-  destinationHub   Hub?     @relation("DestinationHub", fields: [destinationHubId], references: [id])
-  currentHubId     String?
-  currentHub       Hub?     @relation("CurrentHub", fields: [currentHubId], references: [id])
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  events           ShipmentEvent[]
-  runsheetShipment RunsheetShipment?
-  packages         Package[]
-  deliveryAttempts DeliveryAttempt[]
-  deliveryOtps     DeliveryOtp[]
-  obdSessions      ObdSession[]
-  payments         Payment[]
-  slas             Sla[]
-  routeStops       RouteStop[]
-  packageScans     PackageScan[]
-  
-  // Self relations for Return/Replacement
-  originalShipmentId String?
-  originalShipment   Shipment? @relation("ReplacementLink", fields: [originalShipmentId], references: [id])
-  replacementFor     Shipment[] @relation("ReplacementLink")
-
-  @@index([tenantId, status])
-  @@index([tenantId, currentHubId, status])
-  @@index([tenantId, awb])
-  @@index([tenantId, destinationHubId, status])
-}
-
-model Package {
-  id             String        @id @default(uuid())
-  tenantId       String
-  tenant         Tenant        @relation(fields: [tenantId], references: [id])
-  shipmentId     String
-  shipment       Shipment      @relation(fields: [shipmentId], references: [id])
-  packageNumber  Int           @default(1)
-  barcode        String
-  qrCode         String?
-  referenceCode  String?
-  status         PackageStatus @default(CREATED)
-  weight         Float?
-  dimensions     Json?
-  itemCount      Int?          @default(1)
-  declaredValue  Float?
-  images         String[]      @default([])
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  bagItems      BagItem[]
-  manifestItems ManifestItem[]
-  scans         PackageScan[]
-
-  @@unique([tenantId, barcode])
-  @@unique([tenantId, referenceCode])
-  @@index([tenantId, shipmentId])
-  @@index([tenantId, status])
-  @@index([tenantId, barcode])
-  @@index([shipmentId, status])
-}
-
-model PackageScan {
-  id               String   @id @default(uuid())
-  tenantId         String
-  tenant           Tenant   @relation(fields: [tenantId], references: [id])
-  shipmentId       String
-  shipment         Shipment @relation(fields: [shipmentId], references: [id])
-  packageId        String?
-  package          Package? @relation(fields: [packageId], references: [id])
-  bagId            String?
-  bag              Bag?     @relation(fields: [bagId], references: [id])
-  manifestId       String?
-  manifest         Manifest? @relation(fields: [manifestId], references: [id])
-  hubId            String?
-  hub              Hub?     @relation(fields: [hubId], references: [id])
-  runsheetId       String?
-  runsheet         Runsheet? @relation(fields: [runsheetId], references: [id])
-  riderId          String?
-  rider            User?    @relation("PackageScanRider", fields: [riderId], references: [id])
-  userId           String?
-  user             User?    @relation("PackageScanUser", fields: [userId], references: [id])
-  scanType         String   // package, awb, qr, bag, manifest, hub_qr, rider_assignment
-  scanValue        String?
-  idempotencyKey   String?
-  deviceId         String?
-  actorRole        String?
-  gpsLat           Float?
-  gpsLng           Float?
-  gpsAccuracy      Float?
-  clientTimestamp  DateTime?
-  serverTimestamp  DateTime @default(now())
-  status           String   @default("VALID") // VALID, DUPLICATE, INVALID, REJECTED
-  reason           String?
-  metadata         Json?
-  createdByUserId  String?
-  createdBy        User?    @relation("PackageScanCreatedBy", fields: [createdByUserId], references: [id])
-  createdAt        DateTime @default(now())
-
-  @@unique([tenantId, idempotencyKey])
-  @@index([tenantId, shipmentId, createdAt])
-  @@index([tenantId, packageId, createdAt])
-  @@index([tenantId, scanType, status])
 }
 
 enum PackageStatus {
@@ -315,59 +858,6 @@ enum PackageStatus {
   FAILED
 }
 
-model ShipmentEvent {
-  id          String   @id @default(uuid())
-  shipmentId  String
-  shipment    Shipment @relation(fields: [shipmentId], references: [id])
-  status      String
-  locationLat Float?
-  locationLng Float?
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  deviceId    String?
-  metadata    Json?
-  timestamp   DateTime @default(now())
-}
-
-// -----------------------------------------------------------------------------
-// BAGS & MANIFESTS
-// -----------------------------------------------------------------------------
-model Bag {
-  id               String    @id @default(uuid())
-  tenantId         String
-  tenant           Tenant    @relation(fields: [tenantId], references: [id])
-  barcode          String
-  status           BagStatus @default(OPEN)
-  sealNumber       String?
-  weight           Float?
-  originHubId      String
-  originHub        Hub       @relation("BagOrigin", fields: [originHubId], references: [id])
-  destinationHubId String
-  destinationHub   Hub       @relation("BagDestination", fields: [destinationHubId], references: [id])
-  createdById      String?
-  closedById       String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  items         BagItem[]
-  manifestItems ManifestItem[]
-  scans         PackageScan[]
-
-  @@unique([tenantId, barcode])
-  @@index([tenantId, status])
-}
-
-model BagItem {
-  id        String   @id @default(uuid())
-  bagId     String
-  bag       Bag      @relation(fields: [bagId], references: [id])
-  packageId String
-  package   Package  @relation(fields: [packageId], references: [id])
-  createdAt DateTime @default(now())
-
-  @@unique([bagId, packageId])
-}
-
 enum BagStatus {
   OPEN
   SEALED
@@ -377,43 +867,6 @@ enum BagStatus {
   OPENED
   CLOSED
   EXCEPTION
-}
-
-model Manifest {
-  id               String         @id @default(uuid())
-  tenantId         String
-  tenant           Tenant         @relation(fields: [tenantId], references: [id])
-  manifestNumber   String
-  type             ManifestType
-  status           ManifestStatus @default(DRAFT)
-  originHubId      String?
-  originHub        Hub?           @relation("ManifestOrigin", fields: [originHubId], references: [id])
-  destinationHubId String?
-  destinationHub   Hub?           @relation("ManifestDestination", fields: [destinationHubId], references: [id])
-  vehicleId        String?
-  vehicle          Vehicle?       @relation(fields: [vehicleId], references: [id])
-  driverId         String?
-  createdById      String?
-  receivedById     String?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-
-  items ManifestItem[]
-  scans PackageScan[]
-
-  @@unique([tenantId, manifestNumber])
-  @@index([tenantId, status])
-}
-
-model ManifestItem {
-  id         String   @id @default(uuid())
-  manifestId String
-  manifest   Manifest @relation(fields: [manifestId], references: [id])
-  packageId  String?
-  package    Package? @relation(fields: [packageId], references: [id])
-  bagId      String?
-  bag        Bag?     @relation(fields: [bagId], references: [id])
-  status     String   @default("PENDING") // PENDING, RECONCILED, MISSING
 }
 
 enum ManifestType {
@@ -439,137 +892,10 @@ enum ManifestStatus {
   CANCELLED
 }
 
-// -----------------------------------------------------------------------------
-// LAST MILE & DISPATCH
-// -----------------------------------------------------------------------------
-model Runsheet {
-  id        String   @id @default(uuid())
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  hubId     String
-  hub       Hub      @relation(fields: [hubId], references: [id])
-  riderId   String?
-  rider     User?    @relation(fields: [riderId], references: [id])
-  vehicleId String?
-  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
-  status    String   @default("PENDING") // PENDING, ASSIGNED, IN_PROGRESS, COMPLETED
-  date      DateTime
-  slot      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  shipments        RunsheetShipment[]
-  routes           Route[]
-  deliveryAttempts DeliveryAttempt[]
-  scans            PackageScan[]
-
-  @@index([tenantId, riderId, status])
-  @@index([tenantId, hubId, status])
-}
-
-model RunsheetShipment {
-  id            String   @id @default(uuid())
-  runsheetId    String
-  runsheet      Runsheet @relation(fields: [runsheetId], references: [id])
-  shipmentId    String   @unique
-  shipment      Shipment @relation(fields: [shipmentId], references: [id])
-  sequenceOrder Int
-  status        String   @default("PENDING")
-}
-
-model Route {
-  id         String   @id @default(uuid())
-  runsheetId String   @unique
-  runsheet   Runsheet @relation(fields: [runsheetId], references: [id])
-  distance   Float?
-  duration   Int?
-  geometry   String?  // polyline
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  stops RouteStop[]
-}
-
-model RouteStop {
-  id         String   @id @default(uuid())
-  routeId    String
-  route      Route    @relation(fields: [routeId], references: [id])
-  shipmentId String
-  shipment   Shipment @relation(fields: [shipmentId], references: [id])
-  type       String   // DELIVERY, PICKUP
-  sequence   Int
-  lat        Float?
-  lng        Float?
-  eta        DateTime?
-  timeWindow String?
-}
-
-// -----------------------------------------------------------------------------
-// DELIVERY ACTIONS (OTP, OBD, NDR)
-// -----------------------------------------------------------------------------
-model DeliveryAttempt {
-  id            String   @id @default(uuid())
-  shipmentId    String
-  shipment      Shipment @relation(fields: [shipmentId], references: [id])
-  runsheetId    String
-  runsheet      Runsheet @relation(fields: [runsheetId], references: [id])
-  riderId       String
-  rider         User     @relation(fields: [riderId], references: [id])
-  attemptNumber Int
-  status        String   // SUCCESS, FAILED
-  reason        String?
-  notes         String?
-  evidenceUrls  Json?
-  lat           Float?
-  lng           Float?
-  timestamp     DateTime @default(now())
-}
-
-model DeliveryOtp {
-  id         String   @id @default(uuid())
-  shipmentId String
-  shipment   Shipment @relation(fields: [shipmentId], references: [id])
-  otpHash    String
-  expiresAt  DateTime
-  attempts   Int      @default(0)
-  status     String   @default("PENDING") // PENDING, VERIFIED, EXPIRED
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
-
-model ObdSession {
-  id               String   @id @default(uuid())
-  shipmentId       String
-  shipment         Shipment @relation(fields: [shipmentId], references: [id])
-  riderId          String
-  rider            User     @relation(fields: [riderId], references: [id])
-  status           ObdStatus @default(PENDING)
-  codeHash         String
-  customerVerified Boolean  @default(false)
-  evidenceUrls     Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
 enum ObdStatus {
   PENDING
   VERIFIED
   REJECTED
-}
-
-// -----------------------------------------------------------------------------
-// PAYMENTS & COD
-// -----------------------------------------------------------------------------
-model Payment {
-  id               String        @id @default(uuid())
-  shipmentId       String
-  shipment         Shipment      @relation(fields: [shipmentId], references: [id])
-  amount           Float
-  method           PaymentMethod
-  status           PaymentStatus @default(PENDING)
-  gatewayReference String?
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
 }
 
 enum PaymentMethod {
@@ -583,41 +909,6 @@ enum PaymentStatus {
   SUCCESS
   FAILED
   REFUNDED
-}
-
-// -----------------------------------------------------------------------------
-// WORKFORCE & VEHICLES
-// -----------------------------------------------------------------------------
-model RiderProfile {
-  id                String          @id @default(uuid())
-  tenantId          String
-  tenant            Tenant          @relation("TenantRiderProfiles", fields: [tenantId], references: [id])
-  userId            String
-  user              User            @relation("RiderProfileUser", fields: [userId], references: [id])
-  riderCode         String          @unique
-  riderState        RiderState      @default(APPLICANT)
-  onboardingStatus  String          @default("PROFILE_CREATED")
-  preferredHubId    String?
-  primaryHubId      String?
-  serviceArea       String?
-  profilePhotoUrl   String?
-  emergencyContact  Json?
-  joiningDate       DateTime?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
-
-  kycRecords        RiderKyc[]
-  vehicleRecords    Vehicle[]
-  assignments       RiderHubAssignment[]
-  slots             RiderSlot[]
-  checkIns          HubCheckIn[]
-  welcomeKits       WelcomeKit[]
-  activationPins    ActivationPin[]
-  activationRecords RiderActivation[]
-
-  @@unique([tenantId, userId])
-  @@index([tenantId, riderState])
-  @@index([tenantId, preferredHubId])
 }
 
 enum RiderState {
@@ -634,32 +925,6 @@ enum RiderState {
   DEACTIVATED
 }
 
-model RiderKyc {
-  id             String        @id @default(uuid())
-  tenantId       String
-  tenant         Tenant        @relation("TenantRiderKycs", fields: [tenantId], references: [id])
-  riderProfileId String
-  riderProfile   RiderProfile  @relation(fields: [riderProfileId], references: [id])
-  userId         String?       // legacy compatibility
-  user           User?         @relation("RiderKycUser", fields: [userId], references: [id])
-  status         KycStatus     @default(DRAFT)
-  submittedAt    DateTime?
-  verifiedAt     DateTime?
-  rejectedAt     DateTime?
-  rejectionReason String?
-  reviewerId     String?
-  reviewer       User?         @relation("RiderKycReviewer", fields: [reviewerId], references: [id])
-  preferredHubId String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-
-  documents      KycDocument[]
-  verifications  DocumentVerification[]
-
-  @@unique([tenantId, riderProfileId])
-  @@index([tenantId, status])
-}
-
 enum KycStatus {
   DRAFT
   SUBMITTED
@@ -670,73 +935,11 @@ enum KycStatus {
   EXPIRED
 }
 
-model KycDocument {
-  id                 String         @id @default(uuid())
-  tenantId           String
-  tenant             Tenant         @relation("TenantKycDocuments", fields: [tenantId], references: [id])
-  riderKycId         String
-  riderKyc           RiderKyc       @relation(fields: [riderKycId], references: [id])
-  documentType       String
-  documentRef        String?
-  status             DocumentStatus @default(PENDING)
-  uploadedAt         DateTime?
-  verifiedAt         DateTime?
-  rejectedAt         DateTime?
-  expiryDate         DateTime?
-  reviewerId         String?
-  reviewer           User?          @relation("KycDocumentReviewer", fields: [reviewerId], references: [id])
-  rejectionReason    String?
-  originalVerifiedAt DateTime?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-
-  @@index([tenantId, riderKycId, status])
-}
-
 enum DocumentStatus {
   PENDING
   VERIFIED
   REJECTED
   EXPIRED
-}
-
-model DocumentVerification {
-  id            String    @id @default(uuid())
-  tenantId      String
-  tenant        Tenant    @relation("TenantDocumentVerifications", fields: [tenantId], references: [id])
-  riderKycId    String
-  riderKyc      RiderKyc  @relation(fields: [riderKycId], references: [id])
-  documentType  String
-  hubId         String?
-  hub           Hub?      @relation("DocumentVerificationHub", fields: [hubId], references: [id])
-  verifierId    String?
-  verifier      User?     @relation("VerificationReviewer", fields: [verifierId], references: [id])
-  result        String    @default("PENDING")
-  notes         String?
-  verifiedAt    DateTime?
-  createdAt     DateTime  @default(now())
-
-  @@index([tenantId, riderKycId, documentType])
-}
-
-model RiderActivation {
-  id              String          @id @default(uuid())
-  tenantId        String
-  tenant          Tenant          @relation("TenantRiderActivations", fields: [tenantId], references: [id])
-  userId          String
-  user            User            @relation("RiderActivationUser", fields: [userId], references: [id])
-  riderProfileId  String?
-  riderProfile    RiderProfile?   @relation(fields: [riderProfileId], references: [id])
-  hubId           String
-  hub             Hub             @relation("RiderActivationHub", fields: [hubId], references: [id])
-  status          ActivationStatus @default(PENDING)
-  expiresAt       DateTime
-  attempts        Int             @default(0)
-  lastAttemptAt   DateTime?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-
-  activationPins  ActivationPin[]
 }
 
 enum ActivationStatus {
@@ -745,45 +948,6 @@ enum ActivationStatus {
   USED
   EXPIRED
   REVOKED
-}
-
-model ActivationPin {
-  id               String          @id @default(uuid())
-  tenantId         String
-  tenant           Tenant          @relation("TenantActivationPins", fields: [tenantId], references: [id])
-  riderProfileId   String
-  riderProfile     RiderProfile    @relation(fields: [riderProfileId], references: [id])
-  activationId     String?
-  activation       RiderActivation? @relation(fields: [activationId], references: [id])
-  hash             String
-  attempts         Int             @default(0)
-  maxAttempts      Int             @default(5)
-  expiresAt        DateTime
-  status           String          @default("ACTIVE")
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-
-  @@index([tenantId, riderProfileId, status])
-}
-
-model WelcomeKit {
-  id              String           @id @default(uuid())
-  tenantId        String
-  tenant          Tenant           @relation("TenantWelcomeKits", fields: [tenantId], references: [id])
-  riderProfileId  String
-  riderProfile    RiderProfile     @relation(fields: [riderProfileId], references: [id])
-  orderRef        String?
-  status          WelcomeKitStatus @default(ORDERED)
-  items           Json?
-  dispatchStatus  String?
-  courierProvider String?
-  trackingCode    String?
-  expectedDate    DateTime?
-  deliveredAt     DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  @@index([tenantId, riderProfileId, status])
 }
 
 enum WelcomeKitStatus {
@@ -796,111 +960,11 @@ enum WelcomeKitStatus {
   CANCELLED
 }
 
-model RiderHubAssignment {
-  id               String    @id @default(uuid())
-  tenantId         String
-  tenant           Tenant    @relation("TenantRiderAssignments", fields: [tenantId], references: [id])
-  riderProfileId   String
-  riderProfile     RiderProfile @relation(fields: [riderProfileId], references: [id])
-  hubId            String
-  hub              Hub       @relation("RiderHubAssignmentHub", fields: [hubId], references: [id])
-  assignmentStatus String    @default("PENDING")
-  isPrimary        Boolean   @default(false)
-  effectiveFrom    DateTime?
-  effectiveTo      DateTime?
-  approvedById     String?
-  approvedBy       User?     @relation("RiderAssignmentApprover", fields: [approvedById], references: [id])
-  approvedAt       DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  @@index([tenantId, riderProfileId, isPrimary])
-}
-
-model RiderSlot {
-  id             String    @id @default(uuid())
-  tenantId       String
-  tenant         Tenant    @relation("TenantRiderSlots", fields: [tenantId], references: [id])
-  riderProfileId String
-  riderProfile   RiderProfile @relation(fields: [riderProfileId], references: [id])
-  hubId          String
-  hub            Hub       @relation("RiderSlotHub", fields: [hubId], references: [id])
-  date           DateTime
-  startTime      DateTime
-  endTime        DateTime
-  status         SlotStatus @default(BOOKED)
-  capacity       Int       @default(1)
-  bookedCount    Int       @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  checkIns       HubCheckIn[]
-
-  @@index([tenantId, hubId, date])
-  @@index([tenantId, hubId, status, startTime, endTime])
-  @@index([tenantId, riderProfileId, status])
-}
-
 enum SlotStatus {
   AVAILABLE
   BOOKED
   CANCELLED
   LOCKED
-}
-
-model HubCheckIn {
-  id             String    @id @default(uuid())
-  tenantId       String
-  tenant         Tenant    @relation("TenantHubCheckIns", fields: [tenantId], references: [id])
-  riderProfileId String
-  riderProfile   RiderProfile @relation(fields: [riderProfileId], references: [id])
-  hubId          String
-  hub            Hub       @relation("HubCheckInHub", fields: [hubId], references: [id])
-  slotId         String?
-  slot           RiderSlot? @relation(fields: [slotId], references: [id])
-  checkedInAt    DateTime  @default(now())
-  lat            Float?
-  lng            Float?
-  gpsAccuracy    Float?
-  deviceId       String?
-  result         String    @default("CHECKED_IN")
-  createdAt      DateTime  @default(now())
-
-  @@index([tenantId, riderProfileId, slotId])
-}
-
-model Vehicle {
-  id                 String      @id @default(uuid())
-  tenantId           String
-  tenant             Tenant      @relation("TenantVehicles", fields: [tenantId], references: [id])
-  riderProfileId     String?
-  riderProfile       RiderProfile? @relation(fields: [riderProfileId], references: [id])
-  ownerId            String?
-  owner              User?       @relation("VehicleOwner", fields: [ownerId], references: [id])
-  assignedDriverId   String?
-  assignedDriver     User?       @relation("AssignedDriver", fields: [assignedDriverId], references: [id])
-  type               String
-  registration       String      @unique
-  vehicleType        String?
-  make               String?
-  model              String?
-  year               Int?
-  fuelType           String?
-  ownerType          String?     @default("SELF")
-  capacity           Float?
-  status             VehicleStatus @default(PENDING_VERIFICATION)
-  verificationState  String      @default("PENDING")
-  rcReference        String?
-  insuranceReference String?
-  permitReference    String?
-  expiryDate         DateTime?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
-
-  manifests Manifest[]
-  runsheets Runsheet[]
-
-  @@index([tenantId, riderProfileId, status])
 }
 
 enum VehicleStatus {
@@ -911,74 +975,6 @@ enum VehicleStatus {
   INACTIVE
 }
 
-// -----------------------------------------------------------------------------
-// OBSERVABILITY & INTELLIGENCE
-// -----------------------------------------------------------------------------
-model Notification {
-  id        String   @id @default(uuid())
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  userId    String?
-  type      String   // SMS, EMAIL, PUSH
-  channel   String
-  status    String   @default("PENDING")
-  payload   Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model HubNetworkLane {
-  id                    String   @id @default(uuid())
-  tenantId              String
-  tenant                Tenant   @relation(fields: [tenantId], references: [id])
-  fromHubId             String
-  fromHub               Hub      @relation("OutboundLane", fields: [fromHubId], references: [id])
-  toHubId               String
-  toHub                 Hub      @relation("InboundLane", fields: [toHubId], references: [id])
-  distanceKm            Float?
-  expectedTransitMinutes Int?
-  cutoff                String?
-  capacity              Int?
-  active                Boolean  @default(true)
-  serviceTypes          String[]
-  priority              Int      @default(0)
-  vehicleRequirements   String[]
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  @@index([tenantId, active, priority])
-  @@index([tenantId, fromHubId, toHubId])
-}
-
-model HubCapacity {
-  id          String   @id @default(uuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  hubId       String
-  hub         Hub      @relation(fields: [hubId], references: [id])
-  serviceType String?
-  date        DateTime?
-  timeWindow  String?
-  capacity    Int      @default(0)
-  used        Int      @default(0)
-  status      String   @default("OPEN")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([tenantId, hubId, serviceType, date])
-}
-
-model Sla {
-  id         String    @id @default(uuid())
-  shipmentId String
-  shipment   Shipment  @relation(fields: [shipmentId], references: [id])
-  type       String    // PICKUP, TRANSIT, DELIVERY
-  deadline   DateTime
-  status     SlaStatus @default(SAFE)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-}
-
 enum SlaStatus {
   SAFE
   AT_RISK
@@ -986,26 +982,287 @@ enum SlaStatus {
   COMPLETED
 }
 
-model AuditLog {
-  id        String   @id @default(uuid())
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  action    String
-  entity    String
-  entityId  String
-  oldValue  Json?
-  newValue  Json?
-  ipAddress String?
-  timestamp DateTime @default(now())
+model CourierBranch {
+  id              String   @id @default(uuid())
+  branchCode      String   @unique
+  tenantId        String
+  name            String
+  branchType      String   @default("COURIER_BRANCH")
+  region          String?
+  state           String?
+  city            String?
+  address         String?
+  pinCode         String?
+  phone           String?
+  email           String?
+  locationLat     Float?
+  locationLng     Float?
+  servicePinCodes String[] @default([])
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, region])
+  @@index([tenantId, city])
 }
 
-model OutboxEvent {
+model BranchUserAssignment {
   id        String   @id @default(uuid())
-  type      String
-  payload   Json
-  status    String   @default("PENDING") // PENDING, PROCESSED, FAILED
+  tenantId  String
+  branchId  String
+  userId    String
+  role      String
+  status    String   @default("ACTIVE")
+  isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([branchId, userId])
+  @@index([tenantId, branchId])
+  @@index([tenantId, userId])
+}
+
+model PickupRequest {
+  id              String    @id @default(uuid())
+  pickupCode      String    @unique
+  tenantId        String
+  branchId        String
+  createdById     String
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  address         String
+  pinCode         String
+  requestedDate   DateTime?
+  timeWindow      String?
+  packageCount    Int       @default(1)
+  estimatedWeight Float?
+  remarks         String?
+  status          String    @default("BOOKED")
+  assignedRiderId String?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, branchId, status])
+  @@index([tenantId, customerPhone])
+}
+
+model AuthSession {
+  id               String    @id @default(uuid())
+  userId           String
+  refreshTokenHash String    @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  userAgent        String?
+  ipAddress        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PortalAssignment {
+  id            String    @id @default(uuid())
+  tenantId      String
+  userId        String
+  scopeType     String
+  scopeId       String?
+  scopeCode     String?
+  scopeName     String?
+  region        String?
+  permissions   String[]  @default([])
+  isPrimary     Boolean   @default(false)
+  status        String    @default("ACTIVE")
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  createdById   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, userId])
+  @@index([tenantId, scopeType, scopeId])
+  @@index([tenantId, region])
+  @@index([tenantId, status])
+}
+
+model CustomerAddress {
+  id          String   @id @default(uuid())
+  tenantId    String
+  userId      String
+  addressCode String   @unique
+  label       String   @default("Home")
+  contactName String
+  phone       String
+  line1       String
+  line2       String?
+  landmark    String?
+  city        String
+  state       String
+  pinCode     String
+  country     String   @default("India")
+  latitude    Float?
+  longitude   Float?
+  isDefault   Boolean  @default(false)
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, userId, status])
+  @@index([tenantId, pinCode])
+}
+
+model CustomerPaymentMethod {
+  id            String   @id @default(uuid())
+  tenantId      String
+  userId        String
+  methodCode    String   @unique
+  type          String
+  label         String?
+  provider      String?
+  providerToken String?
+  brand         String?
+  last4         String?
+  isDefault     Boolean  @default(false)
+  status        String   @default("ACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId, userId, status])
+}
+
+model CustomerSupportTicket {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String
+  ticketCode String   @unique
+  shipmentId String?
+  awb        String?
+  category   String
+  subject    String
+  priority   String   @default("NORMAL")
+  status     String   @default("OPEN")
+  assignedTo String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([tenantId, userId, status])
+  @@index([tenantId, awb])
+}
+
+model CustomerSupportMessage {
+  id         String   @id @default(uuid())
+  ticketId   String
+  senderId   String
+  senderType String
+  message    String
+  createdAt  DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+}
+
+model ShipmentOtp {
+  id         String    @id @default(uuid())
+  shipmentId String
+  userId     String?
+  type       String
+  otpHash    String
+  cipherText String?
+  expiresAt  DateTime
+  usedAt     DateTime?
+  attempts   Int       @default(0)
+  status     String    @default("ACTIVE")
+  createdAt  DateTime  @default(now())
+
+  @@index([shipmentId, type, status])
+  @@index([userId, status])
+}
+
+model ShipmentRoutingPlan {
+  id         String @id @default(uuid())
+  tenantId   String
+  shipmentId String @unique
+
+  currentHubId String?
+  nextHubId    String?
+
+  currentHubCode String?
+  nextHubCode    String?
+
+  stagingZone String?
+  stagingLane String?
+  stagingRack String?
+
+  plannedVehicleId  String?
+  plannedManifestId String?
+  plannedTripCode   String?
+
+  truckExpectedAt     DateTime?
+  plannedDispatchAt   DateTime?
+  estimatedHubArrival DateTime?
+
+  instruction String?
+  priority    String  @default("NORMAL")
+  status      String  @default("PLANNED")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, currentHubId, status])
+  @@index([tenantId, nextHubId, status])
+  @@index([plannedDispatchAt])
+}
+
+model HubStagingLocation {
+  id       String @id @default(uuid())
+  tenantId String
+  hubId    String
+
+  zoneCode String
+  laneCode String
+  rackCode String?
+
+  routeCode   String?
+  nextHubCode String?
+
+  capacity Int?
+  occupied Int  @default(0)
+
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, hubId, status])
+  @@index([hubId, nextHubCode])
+}
+
+model HubLinehaulSchedule {
+  id       String @id @default(uuid())
+  tenantId String
+
+  originHubId      String
+  destinationHubId String
+
+  originHubCode      String
+  destinationHubCode String
+
+  tripCode  String  @unique
+  vehicleId String?
+
+  plannedArrivalAt   DateTime?
+  plannedDepartureAt DateTime
+
+  cutoffAt       DateTime?
+  capacity       Int?
+  bookedCapacity Int       @default(0)
+
+  status String @default("SCHEDULED")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, originHubId, plannedDepartureAt])
+  @@index([tenantId, destinationHubId, plannedArrivalAt])
 }

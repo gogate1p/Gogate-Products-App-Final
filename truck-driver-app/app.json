@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Gogate Products Truck Driver",
+    "slug": "gogate-products-truck-driver",
+    "scheme": "gogatetruckdriver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission":
+            "Allow Gogate Products Truck Driver to use your location for active trips and hub operations."
+        }
+      ],
+
+      [
+        "expo-camera",
+        {
+          "cameraPermission":
+            "Allow Gogate Products Truck Driver to scan manifests, bags and shipment barcodes."
+        }
+      ],
+
+      "expo-notifications"
+    ],
+
+    "android": {
+      "package": "com.gogateproducts.truckdriver",
+
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+
+    "ios": {
+      "bundleIdentifier":
+        "com.gogateproducts.truckdriver"
+    },
+
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
