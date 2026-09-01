@@ -48,8 +48,7 @@ export default function Page() {
 
     try {
       const API =
-        process.env.NEXT_PUBLIC_API_URL ||
-        "http://localhost:3000";
+        process.env.NEXT_PUBLIC_API_URL || "/api/backend";
 
       const response =
         await fetch(

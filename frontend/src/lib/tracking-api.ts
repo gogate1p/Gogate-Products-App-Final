@@ -3,8 +3,7 @@ import {
 } from "@/lib/portal-auth";
 
 const API =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:3000";
+  process.env.NEXT_PUBLIC_API_URL || "/api/backend";
 
 export async function publicTrack(
   awb: string,
