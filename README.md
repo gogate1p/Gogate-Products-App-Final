@@ -178,6 +178,12 @@ Hub codes are compact operational codes such as:
 - Vercel
 - GitHub
 
+## Vercel Deployment
+
+Deploy the two applications as separate Vercel projects. The frontend project must use `frontend` as its Root Directory, with Next.js detected as the framework. The backend project must use `backend` as its Root Directory and deploy the serverless handler defined in `backend/api/index.ts`.
+
+In the frontend Vercel project, configure `BACKEND_PRODUCTION_URL` to the deployed backend URL, such as `https://backend-five-gamma-76.vercel.app`. Open the frontend project URL to see the website; the backend URL is an API endpoint and will not display the frontend pages.
+
 ## Environment Variables
 
 Secrets are never committed to this repository.
