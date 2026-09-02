@@ -66,25 +66,25 @@ export default function Page() {
     : customer.phone
       ? `Customer ${customer.phone.slice(-4)}`
       : "Customer";
-  const activeShipment = useMemo(
-    () => shipments.find((shipment) => !isDelivered(shipment.status)),
+  const featuredShipment = useMemo(
+    () => shipments.find((shipment) => isActiveShipment(shipment.status)) ?? shipments.find((shipment) => !isDelivered(shipment.status)),
     [shipments],
   );
 
   return (
     <div className="mx-auto max-w-7xl pb-10">
-      <section className="relative overflow-hidden rounded-[32px] bg-slate-950 px-6 py-8 text-white shadow-[0_30px_90px_rgba(15,23,42,.16)] sm:px-9 sm:py-10">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-sky-400/20 blur-3xl" />
-        <div className="absolute -bottom-36 left-1/3 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+      <section className="relative overflow-hidden rounded-[32px] border border-sky-100 bg-gradient-to-br from-white via-sky-50 to-emerald-50 px-6 py-8 text-slate-900 shadow-[0_30px_90px_rgba(14,116,144,.10)] sm:px-9 sm:py-10">
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-sky-300/30 blur-3xl" />
+        <div className="absolute -bottom-36 left-1/3 h-72 w-72 rounded-full bg-emerald-300/20 blur-3xl" />
         <div className="relative grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
           <div>
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[.2em] text-sky-300">
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[.2em] text-sky-700">
               <Sparkles size={15} /> Customer command center
             </div>
             <h1 className="mt-4 max-w-2xl text-3xl font-black tracking-tight sm:text-5xl">
               Good morning, {displayName}.
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
               Every shipment, payment and delivery milestone in one clear workspace.
               Hyperlocal orders show live rider movement only while they are actively in transit.
             </p>
@@ -92,26 +92,26 @@ export default function Page() {
               <Link href="/portal/customer/shipments/new" className="inline-flex items-center gap-2 rounded-2xl bg-sky-400 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-sky-300">
                 <PackagePlus size={17} /> Send a package
               </Link>
-              <Link href="/track" className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/15">
+              <Link href="/track" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:bg-white/15">
                 <Search size={17} /> Track a shipment
               </Link>
             </div>
           </div>
-          <div className="rounded-[26px] border border-white/10 bg-white/10 p-5 backdrop-blur">
+          <div className="rounded-[26px] border border-white/70 bg-white/80 p-5 shadow-[0_16px_40px_rgba(14,116,144,.08)] backdrop-blur">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-black uppercase tracking-[.16em] text-slate-400">Quick tracking</div>
-                <div className="mt-2 text-lg font-black">Where is your shipment?</div>
+                <div className="text-xs font-black uppercase tracking-[.16em] text-sky-700">Quick tracking</div>
+                <div className="mt-2 text-lg font-black text-slate-900">Where is your shipment?</div>
               </div>
               <Navigation className="text-sky-300" size={24} />
             </div>
             <form className="mt-5 flex gap-2" onSubmit={(event) => event.preventDefault()}>
-              <input value={trackingId} onChange={(event) => setTrackingId(event.target.value)} placeholder="Enter AWB or shipment ID" className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300" />
+              <input value={trackingId} onChange={(event) => setTrackingId(event.target.value)} placeholder="Enter AWB or shipment ID" className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-sky-300" />
               <Link href={trackingId.trim() ? `/track?awb=${encodeURIComponent(trackingId.trim())}` : "/track"} className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-slate-950 transition hover:bg-sky-200" aria-label="Track shipment">
                 <ArrowRight size={18} />
               </Link>
             </form>
-            <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-400"><ShieldCheck size={14} className="text-emerald-300" /> Secure, customer-safe tracking</div>
+            <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-500"><ShieldCheck size={14} className="text-emerald-300" /> Secure, customer-safe tracking</div>
           </div>
         </div>
       </section>
@@ -128,11 +128,11 @@ export default function Page() {
       <section className="mt-7 grid gap-5 lg:grid-cols-[1.35fr_.65fr]">
         <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_16px_45px_rgba(15,23,42,.04)] sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div><div className="text-xs font-black uppercase tracking-[.18em] text-sky-600">Live delivery overview</div><h2 className="mt-2 text-2xl font-black text-slate-900">Your next delivery</h2></div>
-            {activeShipment ? <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-emerald-700">{activeShipment.serviceType === "HYPERLOCAL" ? "Live hyperlocal" : "In transit"}</span> : null}
+            <div><div className="text-xs font-black uppercase tracking-[.18em] text-sky-600">Shipment overview</div><h2 className="mt-2 text-2xl font-black text-slate-900">{featuredShipment && isActiveShipment(featuredShipment.status) ? "Your next delivery" : "Your next shipment"}</h2></div>
+            {featuredShipment ? <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-emerald-700">{featuredShipment.serviceType === "HYPERLOCAL" && isActiveShipment(featuredShipment.status) ? "Live hyperlocal" : statusLabel(featuredShipment.status)}</span> : null}
           </div>
-          {activeShipment ? <div className="mt-6 grid gap-5 md:grid-cols-[1fr_auto] md:items-center"><div><div className="text-2xl font-black tracking-wide text-sky-700">{activeShipment.awb}</div><div className="mt-2 flex flex-wrap items-center gap-3 text-sm font-bold text-slate-500"><span className="inline-flex items-center gap-1.5"><MapPin size={15} /> {activeShipment.origin ?? "Pickup location"}</span><ArrowRight size={15} className="text-slate-300" /><span className="inline-flex items-center gap-1.5"><MapPin size={15} /> {activeShipment.destination ?? "Delivery location"}</span></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-2/3 rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" /></div><div className="mt-2 flex justify-between text-[11px] font-bold text-slate-400"><span>Picked up</span><span>In transit</span><span>Delivered</span></div></div><div className="grid h-24 w-24 place-items-center rounded-3xl bg-sky-50 text-sky-600"><Clock3 size={30} /><div className="-mt-5 text-[10px] font-black">ETA soon</div></div></div> : <div className="mt-7 rounded-3xl bg-slate-50 p-7 text-center"><PackageCheck className="mx-auto text-sky-500" size={34} /><div className="mt-3 font-black text-slate-900">No active deliveries</div><p className="mt-1 text-sm text-slate-500">Send a package and follow every milestone from pickup to proof of delivery.</p></div>}
-          {activeShipment && <div className="mt-6 flex flex-wrap gap-3"><Link href={`/track?awb=${encodeURIComponent(activeShipment.awb)}`} className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-xs font-black text-white"><Navigation size={15} /> Open live tracking</Link><Link href={`/portal/customer/shipments/${encodeURIComponent(activeShipment.awb)}/label`} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-xs font-black text-slate-700"><FileText size={15} /> Shipping label</Link></div>}
+          {featuredShipment ? <div className="mt-6 grid gap-5 md:grid-cols-[1fr_auto] md:items-center"><div><div className="text-2xl font-black tracking-wide text-sky-700">{featuredShipment.awb}</div><div className="mt-2 flex flex-wrap items-center gap-3 text-sm font-bold text-slate-500"><span className="inline-flex items-center gap-1.5"><MapPin size={15} /> {featuredShipment.origin ?? "Pickup location"}</span><ArrowRight size={15} className="text-slate-300" /><span className="inline-flex items-center gap-1.5"><MapPin size={15} /> {featuredShipment.destination ?? "Delivery location"}</span></div><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full w-2/3 rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" /></div><div className="mt-2 flex justify-between text-[11px] font-bold text-slate-400"><span>Picked up</span><span>In transit</span><span>Delivered</span></div></div><div className="grid h-24 w-24 place-items-center rounded-3xl bg-sky-50 text-sky-600"><Clock3 size={30} /><div className="-mt-5 text-[10px] font-black">{isActiveShipment(featuredShipment.status) ? "ETA soon" : "Awaiting pickup"}</div></div></div> : <div className="mt-7 rounded-3xl bg-slate-50 p-7 text-center"><PackageCheck className="mx-auto text-sky-500" size={34} /><div className="mt-3 font-black text-slate-900">No active deliveries</div><p className="mt-1 text-sm text-slate-500">Send a package and follow every milestone from pickup to proof of delivery.</p></div>}
+          {featuredShipment && <div className="mt-6 flex flex-wrap gap-3"><Link href={`/track?awb=${encodeURIComponent(featuredShipment.awb)}`} className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-3 text-xs font-black text-white"><Navigation size={15} /> Open live tracking</Link><Link href={`/portal/customer/shipments/${encodeURIComponent(featuredShipment.awb)}/label`} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-xs font-black text-slate-700"><FileText size={15} /> Shipping label</Link></div>}
         </div>
         <div className="rounded-[28px] border border-slate-200 bg-gradient-to-br from-sky-50 to-emerald-50 p-5 sm:p-6"><div className="grid h-11 w-11 place-items-center rounded-2xl bg-white text-sky-600 shadow-sm"><Boxes size={22} /></div><h2 className="mt-5 text-xl font-black text-slate-900">One shipment workspace</h2><p className="mt-2 text-sm leading-6 text-slate-600">Labels, invoices, payment receipts and support are attached to the same shipment record.</p><div className="mt-6 space-y-3 text-sm font-bold text-slate-700"><Feature text="Amazon-style milestone timeline" /><Feature text="Hyperlocal route and rider ETA" /><Feature text="Invoice and label downloads" /></div></div>
       </section>
@@ -150,6 +150,8 @@ export default function Page() {
 }
 
 function isDelivered(status?: string) { return ["DELIVERED", "DELIVERY_CONFIRMED"].includes(status ?? ""); }
+function isActiveShipment(status?: string) { return ["PICKED_UP", "SHIPPED", "AT_HUB", "BAGGED", "MANIFESTED", "IN_TRANSIT", "OUT_FOR_DELIVERY", "RECEIVED"].includes(status ?? ""); }
+function statusLabel(status?: string) { return String(status ?? "CREATED").replaceAll("_", " "); }
 function formatDate(value: string) { return new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short" }).format(new Date(value)); }
 function Feature({ text }: { text: string }) { return <div className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-600" />{text}</div>; }
 function Metric({ icon: Icon, value, label, tone }: { icon: typeof Box; value: number; label: string; tone: "sky" | "violet" | "emerald" | "amber" }) { const colors = { sky: "bg-sky-50 text-sky-600", violet: "bg-violet-50 text-violet-600", emerald: "bg-emerald-50 text-emerald-600", amber: "bg-amber-50 text-amber-600" }; return <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_16px_45px_rgba(15,23,42,.04)]"><div className={`grid h-11 w-11 place-items-center rounded-2xl ${colors[tone]}`}><Icon size={20} /></div><div className="mt-5 text-3xl font-black text-slate-900">{value}</div><div className="mt-1 text-sm font-bold text-slate-500">{label}</div></div>; }
