@@ -26,9 +26,10 @@ import { PackagesModule } from './packages/packages.module.js';
 import { WorkforceModule } from './workforce/workforce.module.js';
 import { HubOpsModule } from './hub-ops/hub-ops.module.js';
 import { TruckDriverModule } from './truck-driver/truck-driver.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 
 @Module({
-  imports: [PidgeModule, PrismaModule, AuthModule, TenantsModule, UsersModule, HubsModule, OrdersModule, ShipmentsModule, RunsheetsModule, EventsModule, PackagesModule, WorkforceModule, TruckDriverModule, HubOpsModule, BranchOpsModule, PortalAuthModule, AssignmentModule, PublicSignupModule, CustomerPortalModule, TrackingModule, CustomerShipmentDetailModule, ShipmentWorkflowModule, CustomerTrackingModule, PublicTrackingModule, HubRoutingModule],
+  imports: [PidgeModule, PrismaModule, AuthModule, TenantsModule, UsersModule, HubsModule, OrdersModule, ShipmentsModule, RunsheetsModule, EventsModule, PackagesModule, WorkforceModule, TruckDriverModule, HubOpsModule, BranchOpsModule, PortalAuthModule, AssignmentModule, PublicSignupModule, CustomerPortalModule, TrackingModule, CustomerShipmentDetailModule, ShipmentWorkflowModule, CustomerTrackingModule, PublicTrackingModule, HubRoutingModule, PaymentsModule],
   controllers: [AppController],
   providers: [AppService],
 })
