@@ -19,14 +19,18 @@ export async function publicTrack(
       },
     );
 
-  const data =
-    await response.json();
+  const contentType = response.headers.get("content-type") ?? "";
+  const data = contentType.includes("application/json")
+    ? await response.json().catch(() => ({}))
+    : await response.text().catch(() => "");
 
   if (!response.ok) {
-    throw new Error(
-      data?.message ??
-      "Shipment not found.",
-    );
+    const message = typeof data === "string"
+      ? data
+      : data?.message ?? data?.error;
+    throw new Error(message || (response.status >= 500
+      ? "Tracking service is temporarily unavailable. Please try again shortly."
+      : "Shipment not found."));
   }
 
   return data;
