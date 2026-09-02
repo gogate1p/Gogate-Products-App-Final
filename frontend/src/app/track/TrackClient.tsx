@@ -17,6 +17,9 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
+  Activity,
+  RadioTower,
+  Zap,
   Truck,
 } from "lucide-react";
 
@@ -139,9 +142,9 @@ export default function TrackClient() {
   ]);
 
   return (
-    <main className="min-h-screen bg-[#f5f7f6]">
+    <main className="min-h-screen bg-[#eef3f7]">
 
-      <header className="border-b border-slate-200 bg-white">
+      <header className="border-b border-slate-800 bg-slate-950 text-white">
 
         <div className="mx-auto max-w-6xl px-5 py-7">
 
@@ -149,25 +152,25 @@ export default function TrackClient() {
 
             <div>
 
-              <div className="text-xl font-black">
+              <div className="flex items-center gap-3 text-xl font-black">
+                <span className="grid h-10 w-10 place-items-center rounded-2xl bg-sky-400 text-slate-950"><RadioTower size={20} /></span>
                 Gogate Products
               </div>
 
-              <div className="mt-1 text-xs font-bold uppercase tracking-[.13em] text-slate-400">
-                Shipment Tracking
+              <div className="mt-2 text-xs font-bold uppercase tracking-[.13em] text-sky-300">
+                Live logistics network
               </div>
 
             </div>
 
 
             {lastRefresh && (
-              <div className="hidden items-center gap-2 text-xs font-bold text-slate-400 sm:flex">
+              <div className="hidden items-center gap-2 text-xs font-bold text-emerald-300 sm:flex">
 
                 <span className="relative flex h-2 w-2">
 
-                  <span className="absolute h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-
-                  <span className="relative h-2 w-2 rounded-full bg-[#159447]" />
+                                    <span className="absolute h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60" />
+                  <span className="relative h-2 w-2 rounded-full bg-emerald-300" />
 
                 </span>
 
@@ -179,7 +182,13 @@ export default function TrackClient() {
           </div>
 
 
-          <div className="mt-6 flex max-w-2xl gap-2">
+          <div className="mt-6 grid max-w-3xl gap-3 sm:grid-cols-[1fr_auto]">
+            <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-white/5 p-2 text-[10px] font-black uppercase tracking-wide text-slate-400 sm:col-span-2">
+              <span className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-emerald-300"><Activity size={14} /> Edge ping</span>
+              <span className="flex items-center gap-2 rounded-xl px-3 py-2"><Zap size={14} className="text-amber-300" /> ETA engine</span>
+              <span className="flex items-center gap-2 rounded-xl px-3 py-2"><RadioTower size={14} className="text-sky-300" /> Event stream</span>
+            </div>
+            <div className="flex max-w-2xl gap-2 sm:col-span-2">
 
             <div className="flex min-w-0 flex-1 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4">
 
@@ -232,9 +241,8 @@ export default function TrackClient() {
               }
             </button>
 
+                      </div>
           </div>
-
-
           {error && (
             <div className="mt-4 max-w-2xl rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-600">
               {error}
