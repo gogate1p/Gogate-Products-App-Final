@@ -30,6 +30,7 @@ import {
 import {
   ShipmentProgress,
 } from "@/components/tracking/ShipmentProgress";
+import HyperlocalMap from "@/components/tracking/HyperlocalMap";
 
 export default function Page() {
   const params =
@@ -200,6 +201,19 @@ export default function Page() {
 
       </section>
 
+      {String(shipment.serviceType).toUpperCase() === "HYPERLOCAL" && data.locations && (
+        <section className="mt-5 rounded-[30px] border border-sky-100 bg-sky-50/60 p-5 sm:p-7">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="text-xs font-black uppercase tracking-[.18em] text-sky-700">Hyperlocal live view</div>
+              <h2 className="mt-2 text-xl font-black text-slate-900">Pickup to delivery route</h2>
+              <p className="mt-1 text-xs text-slate-500">Live rider location is shown only while this hyperlocal order is active.</p>
+            </div>
+            {data.etaMinutes != null && <div className="rounded-2xl bg-white px-4 py-3 text-right shadow-sm"><div className="text-[10px] font-black uppercase tracking-wide text-slate-400">Expected arrival</div><div className="mt-1 text-lg font-black text-slate-900">{data.etaMinutes} min</div></div>}
+          </div>
+          <HyperlocalMap merchant={data.locations.merchant} customer={data.locations.customer} rider={data.locations.rider} />
+        </section>
+      )}
 
       {/* ALL SHIPMENT UPDATES DIRECTLY BELOW TRACKING */}
 
