@@ -17,9 +17,7 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
-  Activity,
   RadioTower,
-  Zap,
   Truck,
 } from "lucide-react";
 
@@ -182,13 +180,7 @@ export default function TrackClient() {
           </div>
 
 
-          <div className="mt-6 grid max-w-3xl gap-3 sm:grid-cols-[1fr_auto]">
-            <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2 text-[10px] font-black uppercase tracking-wide text-slate-500 sm:col-span-2">
-              <span className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-emerald-700 shadow-sm"><Activity size={14} /> Edge ping</span>
-              <span className="flex items-center gap-2 rounded-xl px-3 py-2 text-slate-500"><Zap size={14} className="text-amber-300" /> ETA engine</span>
-              <span className="flex items-center gap-2 rounded-xl px-3 py-2 text-slate-500"><RadioTower size={14} className="text-sky-300" /> Event stream</span>
-            </div>
-            <div className="flex max-w-2xl gap-2 sm:col-span-2">
+          <div className="mt-6 flex max-w-2xl gap-2">
 
             <div className="flex min-w-0 flex-1 items-center rounded-2xl border border-slate-200 bg-slate-50 px-4">
 
@@ -242,7 +234,6 @@ export default function TrackClient() {
             </button>
 
                       </div>
-          </div>
           {error && (
             <div className="mt-4 max-w-2xl rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-600">
               {error}
